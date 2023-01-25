@@ -24,17 +24,14 @@
 	Mark J Crane <markjcrane@fusionpbx.com>
 */
 
-//set the include path
-	$conf = glob("{/usr/local/etc,/etc}/fusionpbx/config.conf", GLOB_BRACE);
-	set_include_path(parse_ini_file($conf[0])['document.root']);
-
-//includes files
+//includes
+	require_once "root.php";
 	require_once "resources/require.php";
 	require_once "resources/check_auth.php";
 	require_once "resources/paging.php";
 
 //check permissions
-	if (permission_exists('bridge_view')) {
+	if (permission_exists('available_destination_view')) {
 		//access granted
 	}
 	else {
@@ -191,7 +188,6 @@
 	echo "<form id='form_list' method='post'>\n";
 	echo "<input type='hidden' id='action' name='action' value=''>\n";
 	echo "<input type='hidden' name='search' value=\"".escape($search)."\">\n";
-
 	echo "<table class='list'>\n";
 	echo "<tr class='list-header'>\n";
 	if (permission_exists('available_destination_add') || permission_exists('available_destination_edit') || permission_exists('available_destination_delete')) {
