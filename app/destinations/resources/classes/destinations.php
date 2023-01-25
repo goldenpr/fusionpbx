@@ -17,7 +17,7 @@
 
 	The Initial Developer of the Original Code is
 	Mark J Crane <markjcrane@fusionpbx.com>
-	Portions created by the Initial Developer are Copyright (C) 2017 - 2023
+	Portions created by the Initial Developer are Copyright (C) 2017 - 2020
 	the Initial Developer. All Rights Reserved.
 
 	Contributor(s):
@@ -990,15 +990,7 @@ if (!class_exists('destinations')) {
 		* valid destination
 		*/
 		public function valid($destination, $type = 'dialplan') {
-			//allow an empty destination
-			if ($destination == ':') {
-				return true;
-			}
-
-			//get all of the $destinations
 			$destinations = $this->all($type);
-
-			//loop through destinations to validate them
 			foreach($destinations as $category => $array) {
 				if (is_array($array)) {
 					foreach ($array as $key => $value) {
@@ -1040,7 +1032,7 @@ if (!class_exists('destinations')) {
 										$array[$this->table][$x][$this->uuid_prefix.'uuid'] = $record['uuid'];
 
 									//get the dialplan uuid and context
-										$sql = "select dialplan_uuid, destination_context from v_destinations ";
+										$sql = "select dialplan_uuid, destination_context, destination_number from v_destinations ";
 										$sql .= "where destination_uuid = :destination_uuid ";
 										$parameters['destination_uuid'] = $record['uuid'];
 										$database = new database;
