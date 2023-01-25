@@ -30,7 +30,7 @@
 	require_once "resources/check_auth.php";
 
 //check permissions
-	if (!permission_exists('bridge_add') && !permission_exists('bridge_edit')) {
+	if (!permission_exists('available_destination_add') && !permission_exists('available_destination_edit')) {
 		echo "access denied";
 		exit;
 	}
@@ -250,11 +250,11 @@
 		echo "</td>\n";
 		echo "<td class='vtable' style='position: relative;' align='left'>\n";
 		echo "	<select class='formfld' name='destination_used'>\n";
-		if ($destination_used == "not use") {
-			echo "		<option value='not use' selected='selected' hidden>".$text['label-not-used']."</option>\n";
+		if ($destination_used == "not used") {
+			echo "		<option value='not used' selected='selected' hidden>".$text['label-not-used']."</option>\n";
 		}
 		else {
-			echo "		<option value='not use' hidden>".$text['label-not-used']."</option>\n";
+			echo "		<option value='not used' hidden>".$text['label-not-used']."</option>\n";
 		}
 		if ($destination_used == "used") {
 			echo "		<option value='used' selected='selected' hidden>".$text['label-used']."</option>\n";
@@ -276,7 +276,7 @@
 	}
 	else
 	{
-		echo "<input type='hidden' name='destination_used' value='not use'>\n";
+		echo "<input type='hidden' name='destination_used' value='not used'>\n";
 	}
 	echo "<tr>\n";
 	echo "<td class='vncellreq' valign='top' align='left' nowrap='nowrap'>\n";
@@ -328,3 +328,4 @@
 	require_once "resources/footer.php";
 
 ?>
+
