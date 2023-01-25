@@ -2,7 +2,7 @@
 
 	//application details
 		$apps[$x]['name'] = 'Available Destinations';
-		$apps[$x]['uuid'] = '3c8dac41-17e3-44b3-ae7d-e01b8aa6acdf';
+		$apps[$x]['uuid'] = '8e0f8acd-f6f8-4456-8558-80bcd68521ce';
 		$apps[$x]['category'] = '';
 		$apps[$x]['subcategory'] = '';
 		$apps[$x]['version'] = '';
