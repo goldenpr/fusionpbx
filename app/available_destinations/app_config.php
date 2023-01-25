@@ -84,6 +84,41 @@
 		$apps[$x]['db'][$y]['fields'][$z]['search'] = 'true';
 		$apps[$x]['db'][$y]['fields'][$z]['description']['en-us'] = 'Enter the destination.';
 		$z++;
+		$apps[$x]['db'][$y]['fields'][$z]['name'] = 'destination_caller_id_name';
+		$apps[$x]['db'][$y]['fields'][$z]['type'] = 'text';
+		$apps[$x]['db'][$y]['fields'][$z]['search'] = 'true';
+		$apps[$x]['db'][$y]['fields'][$z]['description']['en-us'] = 'Enter the destination caller id name.';
+		$z++;
+		$apps[$x]['db'][$y]['fields'][$z]['name'] = 'destination_caller_id_number';
+		$apps[$x]['db'][$y]['fields'][$z]['type'] = 'text';
+		$apps[$x]['db'][$y]['fields'][$z]['search'] = 'true';
+		$apps[$x]['db'][$y]['fields'][$z]['description']['en-us'] = 'Enter the destination caller id number.';
+		$z++;
+		$apps[$x]['db'][$y]['fields'][$z]['name'] = 'destination_type_voice';
+		$apps[$x]['db'][$y]['fields'][$z]['type'] = 'text';
+		$apps[$x]['db'][$y]['fields'][$z]['search'] = 'true';
+		$apps[$x]['db'][$y]['fields'][$z]['description']['en-us'] = 'Enter the destination type voice.';
+		$z++;
+		$apps[$x]['db'][$y]['fields'][$z]['name'] = 'destination_type_fax';
+		$apps[$x]['db'][$y]['fields'][$z]['type'] = 'text';
+		$apps[$x]['db'][$y]['fields'][$z]['search'] = 'true';
+		$apps[$x]['db'][$y]['fields'][$z]['description']['en-us'] = 'Enter the destination type fax.';
+		$z++;
+		$apps[$x]['db'][$y]['fields'][$z]['name'] = 'destination_type_emergency';
+		$apps[$x]['db'][$y]['fields'][$z]['type'] = 'text';
+		$apps[$x]['db'][$y]['fields'][$z]['search'] = 'true';
+		$apps[$x]['db'][$y]['fields'][$z]['description']['en-us'] = 'Enter the destination type emergency.';
+		$z++;
+		$apps[$x]['db'][$y]['fields'][$z]['name'] = 'destination_type_text';
+		$apps[$x]['db'][$y]['fields'][$z]['type'] = 'text';
+		$apps[$x]['db'][$y]['fields'][$z]['search'] = 'true';
+		$apps[$x]['db'][$y]['fields'][$z]['description']['en-us'] = 'Enter the destination type text.';
+		$z++;
+		$apps[$x]['db'][$y]['fields'][$z]['name'] = 'destination_used';
+		$apps[$x]['db'][$y]['fields'][$z]['type'] = 'text';
+		$apps[$x]['db'][$y]['fields'][$z]['search'] = 'true';
+		$apps[$x]['db'][$y]['fields'][$z]['description']['en-us'] = 'Enter the destination use.';
+		$z++;
 		$apps[$x]['db'][$y]['fields'][$z]['name'] = 'destination_enabled';
 		$apps[$x]['db'][$y]['fields'][$z]['type'] = 'text';
 		$apps[$x]['db'][$y]['fields'][$z]['description']['en-us'] = 'Select to enable or disable.';
@@ -92,6 +127,10 @@
 		$apps[$x]['db'][$y]['fields'][$z]['type'] = 'text';
 		$apps[$x]['db'][$y]['fields'][$z]['search'] = 'true';
 		$apps[$x]['db'][$y]['fields'][$z]['description']['en-us'] = 'Enter the description.';
+		$z++;
+		$apps[$x]['db'][$y]['fields'][$z]['name'] = 'destination_order';
+		$apps[$x]['db'][$y]['fields'][$z]['type'] = 'text';
+		$apps[$x]['db'][$y]['fields'][$z]['description']['en-us'] = 'Enter destination order.';
 		$z++;
 		$apps[$x]['db'][$y]['fields'][$z]['name'] = "insert_date";
 		$apps[$x]['db'][$y]['fields'][$z]['type']['pgsql'] = 'timestamptz';
@@ -118,4 +157,5 @@
 		$apps[$x]['db'][$y]['fields'][$z]['description']['en-us'] = "";
 
 ?>
+
 
