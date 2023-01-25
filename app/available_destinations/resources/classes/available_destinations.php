@@ -47,7 +47,7 @@ if (!class_exists('available_destinations')) {
 
 			//assign private variables
 				$this->app_name = 'available_destinations';
-				$this->app_uuid = '3c8dac41-17e3-44b3-ae7d-e01b8aa6acdf';
+				$this->app_uuid = '8e0f8acd-f6f8-4456-8558-80bcd68521ce';
 				$this->permission_prefix = 'available_destination_';
 				$this->list_page = 'available_destinations.php';
 				$this->table = 'available_destinations';
