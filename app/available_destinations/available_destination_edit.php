@@ -307,7 +307,8 @@
 	echo "	".$text['label-destination_description']."\n";
 	echo "</td>\n";
 	echo "<td class='vtable' align='left'>\n";
-	echo "	<input class='formfld' type='text' name='destination_description' maxlength='255' value=\"".escape($destination_description)."\">\n";
+	//echo "	<input class='formfld' type='text' name='destination_description' maxlength='255' value=\"".escape($destination_description)."\">\n";
+	echo "<textarea style='height: 200px;' class='formfld' name='destination_description' height='150px' rows='10' cols='100' >$destination_description</textarea>\n";
 	echo "<br />\n";
 	echo $text['description-destination_description']."\n";
 	echo "</td>\n";
