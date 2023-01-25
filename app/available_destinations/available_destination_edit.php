@@ -150,7 +150,7 @@
 		//save to the data
 			$database = new database;
 			$database->app_name = 'available destinations';
-			$database->app_uuid = '3c8dac41-17e3-44b3-ae7d-e01b8aa6acdf';
+			$database->app_uuid = '8e0f8acd-f6f8-4456-8558-80bcd68521ce';
 			$database->save($array);
 			$message = $database->message;
 
