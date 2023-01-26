@@ -13,33 +13,33 @@
 
 	//permission details
 		$y = 0;
-		$apps[$x]['permissions'][$y]['name'] = 'available_destination_view';
-													  
+		$apps[$x]['permissions'][$y]['name'] = 'available_destination_view';		  
 		$apps[$x]['permissions'][$y]['groups'][] = 'superadmin';
 		$apps[$x]['permissions'][$y]['groups'][] = 'admin';
 		$y++;
+
 		$apps[$x]['permissions'][$y]['name'] = 'available_destination_add';
-													  
 		$apps[$x]['permissions'][$y]['groups'][] = 'superadmin';
 		$apps[$x]['permissions'][$y]['groups'][] = 'admin';
 		$y++;
-		$apps[$x]['permissions'][$y]['name'] = 'available_destination_edit';
-													  
+
+		$apps[$x]['permissions'][$y]['name'] = 'available_destination_edit';	  
 		$apps[$x]['permissions'][$y]['groups'][] = 'superadmin';
 		$apps[$x]['permissions'][$y]['groups'][] = 'admin';
 		$y++;
+
 		$apps[$x]['permissions'][$y]['name'] = 'available_destination_delete';
-													  
 		$apps[$x]['permissions'][$y]['groups'][] = 'superadmin';
 		$apps[$x]['permissions'][$y]['groups'][] = 'admin';
 		$y++;
+
 		$apps[$x]['permissions'][$y]['name'] = 'available_destination_all';
-													  
 		$apps[$x]['permissions'][$y]['groups'][] = 'superadmin';
+    $apps[$x]['permissions'][$y]['groups'][] = 'admin';
 		$y++;
+
 		$apps[$x]['permissions'][$y]['name'] = 'available_destination_destinations';
-		$apps[$x]['permissions'][$y]['groups'][] = 'superadmin';
-													  
+		$apps[$x]['permissions'][$y]['groups'][] = 'superadmin';  
 		$apps[$x]['permissions'][$y]['groups'][] = 'admin';
 		$y++;
 
@@ -163,6 +163,3 @@
 		$apps[$x]['db'][$y]['fields'][$z]['description']['en-us'] = "";
 
 ?>
-
-
-

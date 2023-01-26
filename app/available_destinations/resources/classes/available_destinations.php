@@ -192,7 +192,6 @@ if (!class_exists('available_destinations')) {
 
 			}
 		}
-
 	}
 }
 
