@@ -24,8 +24,12 @@
 	Mark J Crane <markjcrane@fusionpbx.com>
 */
 
-//includes
-	include_once "root.php";
+//set the include path
+	$conf = glob("{/usr/local/etc,/etc}/fusionpbx/config.conf", GLOB_BRACE);
+	set_include_path(parse_ini_file($conf[0])['document.root']);
+
+//includes files
+	require_once "resources/require.php";
 	require_once "resources/require.php";
 	require_once "resources/check_auth.php";
 	require_once "resources/paging.php";
@@ -346,7 +350,7 @@ if (is_numeric($_SESSION['limit']['extensions']['numeric'])) {
 			echo "	</td>\n";
 			echo " <td class='center'>".escape($row['w_username'])."</td>\n";
 			echo " <td class='center'>".escape($row['w_password'])."</td>\n";
-			echo "	<td width='40%' class='description overflow hide-sm-dn'>".escape($row['description'])."</td>\n";
+			echo " <td width='40%' class='description overflow hide-sm-dn'>".escape($row['description'])."</td>\n";
 			if (permission_exists('extension_edit') && $_SESSION['theme']['list_row_edit_button']['boolean'] == 'true') {
 				echo "	<td class='action-button'>";
 				echo button::create(['type'=>'button','title'=>$text['button-edit'],'icon'=>$_SESSION['theme']['button_icon_edit'],'link'=>$list_row_url]);

@@ -1,6 +1,6 @@
 --      xml_handler.lua
 --      Part of FusionPBX
---      Copyright (C) 2015-2021 Mark J Crane <markjcrane@fusionpbx.com>
+--      Copyright (C) 2015-2022 Mark J Crane <markjcrane@fusionpbx.com>
 --      All rights reserved.
 --
 --      Redistribution and use in source and binary forms, with or without
@@ -63,6 +63,7 @@
 			elseif #dsn > 0 then
 				table.insert(xml, [[                            <param name="odbc-dsn" value="]]..database["switch"]..[["/>]]);
 			end
+			table.insert(xml, [[                          <param name="cc-instance-id" value="]]..hostname..[["/>]]);
 			-- table.insert(xml, [[                          <param name="dbname" value="]]..database_dir..[[/call_center.db"/>]]);
 			table.insert(xml, [[                    </settings>]]);
 
@@ -87,6 +88,7 @@
 					queue_time_base_score = row.queue_time_base_score;
 					queue_max_wait_time = row.queue_max_wait_time;
 					queue_max_wait_time_with_no_agent = row.queue_max_wait_time_with_no_agent;
+					queue_max_wait_time_with_no_agent_time_reached = row.queue_max_wait_time_with_no_agent_time_reached;
 					queue_tier_rules_apply = row.queue_tier_rules_apply;
 					queue_tier_rule_wait_second = row.queue_tier_rule_wait_second;
 					queue_tier_rule_wait_multiply_level = row.queue_tier_rule_wait_multiply_level;
@@ -155,7 +157,9 @@
 		--get the agents
 			table.insert(xml, [[                    <agents>]]);
 			sql = "select SPLIT_PART(SPLIT_PART(a.agent_contact, '/', 2), '@', 1) as extension,  ";
-			sql = sql .. "(select extension_uuid from v_extensions where domain_uuid = a.domain_uuid and extension = SPLIT_PART(SPLIT_PART(a.agent_contact, '/', 2), '@', 1)) as extension_uuid, a.*, d.domain_name  ";
+			sql = sql .. "(select extension_uuid from v_extensions where domain_uuid = a.domain_uuid ";
+			sql = sql .. "and extension = SPLIT_PART(SPLIT_PART(a.agent_contact, '/', 2), '@', 1) limit 1) as extension_uuid, ";
+			sql = sql .. "a.*, d.domain_name  ";
 			sql = sql .. "from v_call_center_agents as a, v_domains as d ";
 			sql = sql .. "where d.domain_uuid = a.domain_uuid; ";
 			--sql = "select * from v_call_center_agents as a, v_domains as d ";

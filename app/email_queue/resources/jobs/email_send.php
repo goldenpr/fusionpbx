@@ -2,19 +2,18 @@
 
 //check the permission
 	if (defined('STDIN')) {
-		$document_root = str_replace("\\", "/", $_SERVER["PHP_SELF"]);
-		preg_match("/^(.*)\/app\/.*$/", $document_root, $matches);
-		$document_root = $matches[1];
-		set_include_path($document_root);
-		$_SERVER["DOCUMENT_ROOT"] = $document_root;
-		require_once "resources/require.php";
+		//set the include path
+		$conf = glob("{/usr/local/etc,/etc}/fusionpbx/config.conf", GLOB_BRACE);
+		set_include_path(parse_ini_file($conf[0])['document.root']);
 	}
 	else {
 		exit;
-		include "root.php";
-		require_once "resources/require.php";
-		require_once "resources/pdo.php";
 	}
+
+//include files
+	require_once "resources/require.php";
+	include "resources/classes/permissions.php";
+	require $_SERVER['DOCUMENT_ROOT']."/app/email_queue/resources/functions/transcribe.php";
 
 //increase limits
 	set_time_limit(0);
@@ -28,19 +27,81 @@
 	}
 	//print_r($_GET);
 
-//set the variables
-	if (isset($_GET['hostname'])) {
+//get the primary key
+	if (is_uuid($_GET['email_queue_uuid'])) {
+		$email_queue_uuid = $_GET['email_queue_uuid'];
 		$hostname = urldecode($_GET['hostname']);
-	}
-	if (isset($_GET['debug'])) {
 		$debug = $_GET['debug'];
+		$sleep_seconds = $_GET['sleep'];
+	}
+	else {
+		//invalid uuid
+		exit;
 	}
 
-//includes
-	if (!defined('STDIN')) { include_once "root.php"; }
-	require_once "resources/require.php";
-	include "resources/classes/permissions.php";
-	require $document_root."/app/email_queue/resources/functions/transcribe.php";
+//define the process id file
+	$pid_file = "/var/run/fusionpbx/email_send".".".$email_queue_uuid.".pid";
+	//echo "pid_file: ".$pid_file."\n";
+
+//function to check if the process exists
+	function process_exists($file = false) {
+
+		//set the default exists to false
+		$exists = false;
+
+		//check to see if the process is running
+		if (file_exists($file)) {
+			$pid = file_get_contents($file);
+			if (posix_getsid($pid) === false) { 
+				//process is not running
+				$exists = false;
+			}
+			else {
+				//process is running
+				$exists = true;
+			}
+		}
+
+		//return the result
+		return $exists;
+	}
+
+//check to see if the process exists
+	$pid_exists = process_exists($pid_file);
+
+//prevent the process running more than once
+	if ($pid_exists) {
+		//echo "Cannot lock pid file {$pid_file}\n";
+		exit;
+	}
+
+//make sure the /var/run/fusionpbx directory exists
+	if (!file_exists('/var/run/fusionpbx')) {
+		$result = mkdir('/var/run/fusionpbx', 0777, true);
+		if (!$result) {
+			die('Failed to create /var/run/fusionpbx');
+		}
+	}
+
+//create the process id file if the process doesn't exist
+	if (!$pid_exists) {
+		//remove the old pid file
+		if (file_exists($file)) {
+			unlink($pid_file);
+		}
+
+		//show the details to the user
+		//echo "The process id is ".getmypid()."\n";
+		//echo "pid_file: ".$pid_file."\n";
+
+		//save the pid file
+		file_put_contents($pid_file, getmypid());
+	}
+
+//sleep used for debugging
+	if (isset($sleep_seconds)) {
+		sleep($sleep_seconds);
+	}
 
 //define a function to remove html tags
 	if (!function_exists('remove_tags')) {
@@ -62,15 +123,6 @@
 //includes
 	include_once "resources/phpmailer/class.phpmailer.php";
 	include_once "resources/phpmailer/class.smtp.php";
-
-//set the GET array
-	if (!empty($argv[1])) {
-		parse_str($argv[1], $_GET);
-	}
-
-//get the primary key
-	$email_queue_uuid = $_GET['email_queue_uuid'];
-	$hostname = $_GET['hostname'];
 
 //get the email details to send
 	$sql = "select * from v_email_queue ";
@@ -101,108 +153,6 @@
 	if (strlen($email_retry_count) == 0) {
 		$email_retry_count = 0;
 	}
-
-//create the email object
-/*
-	$mail = new PHPMailer();
-	if (isset($_SESSION['email']['method'])) {
-		switch ($_SESSION['email']['method']['text']) {
-			case 'sendmail': $mail->IsSendmail(); break;
-			case 'qmail': $mail->IsQmail(); break;
-			case 'mail': $mail->IsMail(); break;
-			default: $mail->IsSMTP(); break;
-		}
-	}
-	else {
-		$mail->IsSMTP();
-	}
-*/
-
-//load default smtp settings
-/*
-	if ($_SESSION['email']['smtp_hostname']['text'] != '') { 
-		$smtp['hostname'] = $_SESSION['email']['smtp_hostname']['text'];
-	}
-	$smtp['host'] 		= (strlen($_SESSION['email']['smtp_host']['text']) ? $_SESSION['email']['smtp_host']['text']: '127.0.0.1');
-	if (isset($_SESSION['email']['smtp_port'])) {
-		$smtp['port'] = (int) $_SESSION['email']['smtp_port']['numeric'];
-	}
-	else {
-		$smtp['port'] = 0;
-	}
-	$smtp['secure'] 	= $_SESSION['email']['smtp_secure']['text'];
-	$smtp['auth'] 		= $_SESSION['email']['smtp_auth']['text'];
-	$smtp['username'] 	= $_SESSION['email']['smtp_username']['text'];
-	$smtp['password'] 	= $_SESSION['email']['smtp_password']['text'];
-	$smtp['from'] 		= $_SESSION['email']['smtp_from']['text'];
-	$smtp['from_name'] 	= $_SESSION['email']['smtp_from_name']['text'];
-
-	if (isset($_SESSION['voicemail']['smtp_from']) && strlen($_SESSION['voicemail']['smtp_from']['text']) > 0) {
-		$smtp['from'] = $_SESSION['voicemail']['smtp_from']['text'];
-	}
-	if (isset($_SESSION['voicemail']['smtp_from_name']) && strlen($_SESSION['voicemail']['smtp_from_name']['text']) > 0) {
-		$smtp['from_name'] = $_SESSION['voicemail']['smtp_from_name']['text'];
-	}
-*/
-
-//overwrite with domain-specific smtp server settings, if any
-	$sql = "select domain_setting_subcategory, domain_setting_value ";
-	$sql .= "from v_domain_settings ";
-	$sql .= "where domain_uuid = :domain_uuid ";
-	$sql .= "and (domain_setting_category = 'email' or domain_setting_category = 'voicemail') ";
-	$sql .= "and domain_setting_enabled = 'true' ";
-	$parameters['domain_uuid'] = $domain_uuid;
-	$database = new database;
-	$result = $database->select($sql, $parameters, 'all');
-	if (is_array($result) && @sizeof($result) != 0) {
-		foreach ($result as $row) {
-			if ($row['domain_setting_value'] != '') {
-				$smtp[str_replace('smtp_','',$row["domain_setting_subcategory"])] = $row['domain_setting_value'];
-			}
-		}
-	}
-	unset($sql, $parameters, $result, $row);
-
-//value adjustments
-	$smtp['auth']		= ($smtp['auth'] == "true") ? true : false;
-	$smtp['password']	= ($smtp['password'] != '') ? $smtp['password'] : null;
-	$smtp['secure']		= ($smtp['secure'] != "none") ? $smtp['secure'] : null;
-	$smtp['username']	= ($smtp['username'] != '') ? $smtp['username'] : null;
-
-//option to disable smtp ssl or tls validation
-/*
-	if (isset($_SESSION['email']['smtp_validate_certificate'])) {
-		if ($_SESSION['email']['smtp_validate_certificate']['boolean'] == "false") {
-			$mail->SMTPOptions = array(
-				'ssl' => array(
-				'verify_peer' => false,
-				'verify_peer_name' => false,
-				'allow_self_signed' => true
-				)
-			);
-		}
-	}
-*/
-
-//add smtp authentication
-/*
-	$mail->SMTPAuth = $smtp['auth'];
-	if (isset($smtp['hostname'])) { 
-		$mail->Hostname = $smtp['hostname'];
-	}
-	$mail->Host = $smtp['host'];
-	if ($smtp['port'] != 0) {
-		$mail->Port = $smtp['port'];
-	}
-	if ($smtp['secure'] != '') {
-		$mail->SMTPSecure = $smtp['secure'];
-	}
-	if ($smtp['auth']) {
-		$mail->Username = $smtp['username'];
-		$mail->Password = $smtp['password'];
-	}
-	$mail->SMTPDebug = 4;
-*/
 
 //get the voicemail details
 	$sql = "select * from v_voicemails ";
@@ -344,6 +294,7 @@
 
 //send the email
 	$email = new email;
+	$email->domain_uuid = $domain_uuid;
 	$email->from_address = $email_from_address;
 	$email->from_name = $email_from_name;
 	$email->recipients = $email_to;
@@ -353,97 +304,18 @@
 	$email->method = 'direct';
 	$sent = $email->send();
 	//$response = $email->email_error;
-	
-//add to, from, fromname, custom headers and subject to the email
-/*
-	$mail->From = $smtp['from'] ;
-	$mail->FromName = $smtp['from_name'];
-	$mail->Subject = $email_subject;
-
-	$email_to = trim($email_to, "<> ");
-	$email_to = str_replace(";", ",", $email_to);
-	$email_to_array = explode(",", $email_to);
-	if (count($email_to_array) == 0) {
-		$mail->AddAddress($email_to);
-	}
-	else {
-		foreach ($email_to_array as $email_address) {
-			if (strlen($email_address) > 0) {
-				echo "Add Address: $email_address\n";
-				$mail->AddAddress(trim($email_address));
-			}
-		}
-	}
-*/
-
-//add the body to the email
-/*
-	$body_plain = remove_tags($email_body);
-	//echo "body_plain = $body_plain\n";
-	if ((substr($email_body, 0, 5) == "<html") || (substr($email_body, 0, 9) == "<!doctype")) {
-		//$mail->ContentType = "text/html; charset=utf-8";
-		$mail->Body = $email_body."<br><br>";
-		$mail->AltBody = $body_plain."\n";
-		$mail->isHTML(true);
-	}
-	else {
-		//$mail->Body = ($body != '') ? $body : $body_plain;
-		$mail->Body = $body_plain."\n";
-		$mail->AltBody = $body_plain."\n";
-		$mail->isHTML(false);
-	}
-	$mail->CharSet = "utf-8";
-*/
 
 //send the email
 	if ($sent) {
-		//if ($mail->Send()) {
-
-		/*
-		$sql = "delete from v_email_queue_attachments ";
-		$sql .= "where email_queue_uuid = :email_queue_uuid; ";
-		$parameters['email_queue_uuid'] = $email_queue_uuid;
-		$database = new database;
-		$database->select($sql, $parameters);
-
-		$sql = "delete from v_email_queue ";
-		$sql .= "where email_queue_uuid = :email_queue_uuid; ";
-		$parameters['email_queue_uuid'] = $email_queue_uuid;
-		$database = new database;
-		$database->select($sql, $parameters);
-		*/
-
-		/*
-		//build insert array
-		$email_log_uuid = uuid();
-		$array['email_queue'][0]['email_queue_uuid'] = $email_queue_uuid;
-		$array['email_queue'][0]['email_status'] = 'sent';
-		if (isset($field['message'])) {
-			$array['email_queue'][0]['email_transcription'] = $field['message'];
-		}
-
-		//grant temporary permissions
-		$p = new permissions;
-		$p->add('email_queue_add', 'temp');
-
-		//execute insert
-		$database = new database;
-		$database->app_name = 'email_queue';
-		$database->app_uuid = 'ba41954e-9d21-4b10-bbc2-fa5ceabeb184';
-		$database->save($array);
-		unset($array);
-
-		//revoke temporary permissions
-		$p->delete('email_queue_add', 'temp');
-		*/
 
 		//set the email status to sent
 		$sql = "update v_email_queue ";
-		$sql .= "set email_status = 'sent' ";
+		$sql .= "set email_status = 'sent', ";
 		//$sql .= "set email_status = 'waiting' "; //debug
 		if (isset($transcribe_message)) {
-			$sql .= ", email_transcription = :email_transcription ";
+			$sql .= "email_transcription = :email_transcription, ";
 		}
+		$sql .= "update_date = now() ";
 		$sql .= "where email_queue_uuid = :email_queue_uuid; ";
 		$parameters['email_queue_uuid'] = $email_queue_uuid;
 		if (isset($transcribe_message)) {
@@ -457,6 +329,9 @@
 
 		//delete the email after it is sent
 		if ($email_action_after == 'delete') {
+			//delay the delete by a few seconds
+			sleep(3);
+
 			//remove the email file after it has been sent
 			if (is_array($email_queue_attachments) && @sizeof($email_queue_attachments) != 0) {
 				foreach($email_queue_attachments as $field) {
@@ -562,7 +437,8 @@
 		else {
 			$sql .= "set email_status = 'trying', ";
 		}
-		$sql .= "email_retry_count = :email_retry_count ";
+		$sql .= "email_retry_count = :email_retry_count, ";
+		$sql .= "update_date = now() ";
 		//$sql .= ", email_debug = :email_debug ";
 		$sql .= "where email_queue_uuid = :email_queue_uuid; ";
 		$parameters['email_queue_uuid'] = $email_queue_uuid;
@@ -610,6 +486,11 @@
 		}
 		*/
 
+	}
+
+//remove the old pid file
+	if (file_exists($pid_file)) {
+		unlink($pid_file);
 	}
 
 //unset the php mail object

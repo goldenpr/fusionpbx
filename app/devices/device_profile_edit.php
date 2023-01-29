@@ -23,8 +23,11 @@
 	Mark J Crane <markjcrane@fusionpbx.com>
 */
 
-//includes
-	require_once "root.php";
+//set the include path
+	$conf = glob("{/usr/local/etc,/etc}/fusionpbx/config.conf", GLOB_BRACE);
+	set_include_path(parse_ini_file($conf[0])['document.root']);
+
+//includes files
 	require_once "resources/require.php";
 
 //check permissions
@@ -434,7 +437,9 @@
 			echo "			<td class='vtable'>".$text['label-device_key_protected']."</td>\n";
 		}
 		echo "			<td class='vtable'>".$text['label-device_key_label']."</td>\n";
-		echo "			<td class='vtable'>".$text['label-device_key_icon']."</td>\n";
+		if (permission_exists('device_key_icon')) {
+			echo "			<td class='vtable'>".$text['label-device_key_icon']."</td>\n";
+		}
 		if (is_array($device_profile_keys) && @sizeof($device_profile_keys) > 1 && permission_exists('device_profile_key_delete')) {
 			echo "			<td class='vtable edit_delete_checkbox_all' onmouseover=\"swap_display('delete_label_keys', 'delete_toggle_keys');\" onmouseout=\"swap_display('delete_label_keys', 'delete_toggle_keys');\">\n";
 			echo "				<span id='delete_label_keys'>".$text['label-delete']."</span>\n";
@@ -473,7 +478,9 @@
 				echo "				<td class='vtable'>".$text['label-device_key_protected']."</td>\n";
 			}
 			echo "				<td class='vtable'>".$text['label-device_key_label']."</td>\n";
-			echo "				<td class='vtable'>".$text['label-device_key_icon']."</td>\n";
+			if (permission_exists('device_key_icon')) {
+				echo "			<td class='vtable'>".$text['label-device_key_icon']."</td>\n";
+			}
 			if (is_array($device_profile_keys) && @sizeof($device_profile_keys) > 1 && is_uuid($row["device_profile_key_uuid"]) && permission_exists('device_profile_key_delete')) {
 				echo "				<td class='vtable edit_delete_checkbox_all' onmouseover=\"swap_display('delete_label_keys_".$device_vendor."', 'delete_toggle_keys_".$device_vendor."');\" onmouseout=\"swap_display('delete_label_keys_".$device_vendor."', 'delete_toggle_keys_".$device_vendor."');\">\n";
 				echo "					<span id='delete_label_keys_".$device_vendor."'>".$text['label-delete']."</span>\n";
@@ -603,9 +610,11 @@
 		echo "			<td class='formfld'>\n";
 		echo "				<input class='formfld' type='text' name='device_profile_keys[$x][profile_key_label]' maxlength='255' value=\"".escape($row["profile_key_label"])."\">\n";
 		echo "			</td>\n";
-		echo "			<td class='formfld'>\n";
-		echo "				<input class='formfld' type='text' name='device_profile_keys[$x][profile_key_icon]' maxlength='255' value=\"".escape($row["profile_key_icon"])."\">\n";
-		echo "			</td>\n";
+		if (permission_exists('device_key_icon')) {
+			echo "		<td class='formfld'>\n";
+			echo "			<input class='formfld' type='text' name='device_profile_keys[$x][profile_key_icon]' maxlength='255' value=\"".escape($row["profile_key_icon"])."\">\n";
+			echo "		</td>\n";
+		}
 		if (is_array($device_profile_keys) && @sizeof($device_profile_keys) > 1 && permission_exists('device_profile_key_delete')) {
 			if (is_uuid($row["device_profile_key_uuid"])) {
 				echo "			<td class='vtable' style='text-align: center; padding-bottom: 3px;'>\n";

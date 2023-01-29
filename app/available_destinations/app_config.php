@@ -2,7 +2,7 @@
 
 	//application details
 		$apps[$x]['name'] = 'Available Destinations';
-		$apps[$x]['uuid'] = '3c8dac41-17e3-44b3-ae7d-e01b8aa6acdf';
+		$apps[$x]['uuid'] = '8e0f8acd-f6f8-4456-8558-80bcd68521ce';
 		$apps[$x]['category'] = '';
 		$apps[$x]['subcategory'] = '';
 		$apps[$x]['version'] = '';
@@ -13,33 +13,33 @@
 
 	//permission details
 		$y = 0;
-		$apps[$x]['permissions'][$y]['name'] = 'available_destination_view';
-		$apps[$x]['permissions'][$y]['groups'][] = 'golden';
+		$apps[$x]['permissions'][$y]['name'] = 'available_destination_view';		  
 		$apps[$x]['permissions'][$y]['groups'][] = 'superadmin';
-		//$apps[$x]['permissions'][$y]['groups'][] = 'admin';
+		$apps[$x]['permissions'][$y]['groups'][] = 'admin';
 		$y++;
+
 		$apps[$x]['permissions'][$y]['name'] = 'available_destination_add';
-		$apps[$x]['permissions'][$y]['groups'][] = 'golden';
 		$apps[$x]['permissions'][$y]['groups'][] = 'superadmin';
-		//$apps[$x]['permissions'][$y]['groups'][] = 'admin';
+		$apps[$x]['permissions'][$y]['groups'][] = 'admin';
 		$y++;
-		$apps[$x]['permissions'][$y]['name'] = 'available_destination_edit';
-		$apps[$x]['permissions'][$y]['groups'][] = 'golden';
+
+		$apps[$x]['permissions'][$y]['name'] = 'available_destination_edit';	  
 		$apps[$x]['permissions'][$y]['groups'][] = 'superadmin';
-		//$apps[$x]['permissions'][$y]['groups'][] = 'admin';
+		$apps[$x]['permissions'][$y]['groups'][] = 'admin';
 		$y++;
+
 		$apps[$x]['permissions'][$y]['name'] = 'available_destination_delete';
-		$apps[$x]['permissions'][$y]['groups'][] = 'golden';
 		$apps[$x]['permissions'][$y]['groups'][] = 'superadmin';
-		//$apps[$x]['permissions'][$y]['groups'][] = 'admin';
+		$apps[$x]['permissions'][$y]['groups'][] = 'admin';
 		$y++;
+
 		$apps[$x]['permissions'][$y]['name'] = 'available_destination_all';
-		$apps[$x]['permissions'][$y]['groups'][] = 'golden';
 		$apps[$x]['permissions'][$y]['groups'][] = 'superadmin';
+    $apps[$x]['permissions'][$y]['groups'][] = 'admin';
 		$y++;
+
 		$apps[$x]['permissions'][$y]['name'] = 'available_destination_destinations';
-		$apps[$x]['permissions'][$y]['groups'][] = 'superadmin';
-		$apps[$x]['permissions'][$y]['groups'][] = 'golden';
+		$apps[$x]['permissions'][$y]['groups'][] = 'superadmin';  
 		$apps[$x]['permissions'][$y]['groups'][] = 'admin';
 		$y++;
 
@@ -90,6 +90,41 @@
 		$apps[$x]['db'][$y]['fields'][$z]['search'] = 'true';
 		$apps[$x]['db'][$y]['fields'][$z]['description']['en-us'] = 'Enter the destination.';
 		$z++;
+		$apps[$x]['db'][$y]['fields'][$z]['name'] = 'destination_caller_id_name';
+		$apps[$x]['db'][$y]['fields'][$z]['type'] = 'text';
+		$apps[$x]['db'][$y]['fields'][$z]['search'] = 'true';
+		$apps[$x]['db'][$y]['fields'][$z]['description']['en-us'] = 'Enter the destination caller id name.';
+		$z++;
+		$apps[$x]['db'][$y]['fields'][$z]['name'] = 'destination_caller_id_number';
+		$apps[$x]['db'][$y]['fields'][$z]['type'] = 'text';
+		$apps[$x]['db'][$y]['fields'][$z]['search'] = 'true';
+		$apps[$x]['db'][$y]['fields'][$z]['description']['en-us'] = 'Enter the destination caller id number.';
+		$z++;
+		$apps[$x]['db'][$y]['fields'][$z]['name'] = 'destination_type_voice';
+		$apps[$x]['db'][$y]['fields'][$z]['type'] = 'text';
+		$apps[$x]['db'][$y]['fields'][$z]['search'] = 'true';
+		$apps[$x]['db'][$y]['fields'][$z]['description']['en-us'] = 'Enter the destination type voice.';
+		$z++;
+		$apps[$x]['db'][$y]['fields'][$z]['name'] = 'destination_type_fax';
+		$apps[$x]['db'][$y]['fields'][$z]['type'] = 'text';
+		$apps[$x]['db'][$y]['fields'][$z]['search'] = 'true';
+		$apps[$x]['db'][$y]['fields'][$z]['description']['en-us'] = 'Enter the destination type fax.';
+		$z++;
+		$apps[$x]['db'][$y]['fields'][$z]['name'] = 'destination_type_emergency';
+		$apps[$x]['db'][$y]['fields'][$z]['type'] = 'text';
+		$apps[$x]['db'][$y]['fields'][$z]['search'] = 'true';
+		$apps[$x]['db'][$y]['fields'][$z]['description']['en-us'] = 'Enter the destination type emergency.';
+		$z++;
+		$apps[$x]['db'][$y]['fields'][$z]['name'] = 'destination_type_text';
+		$apps[$x]['db'][$y]['fields'][$z]['type'] = 'text';
+		$apps[$x]['db'][$y]['fields'][$z]['search'] = 'true';
+		$apps[$x]['db'][$y]['fields'][$z]['description']['en-us'] = 'Enter the destination type text.';
+		$z++;
+		$apps[$x]['db'][$y]['fields'][$z]['name'] = 'destination_used';
+		$apps[$x]['db'][$y]['fields'][$z]['type'] = 'text';
+		$apps[$x]['db'][$y]['fields'][$z]['search'] = 'true';
+		$apps[$x]['db'][$y]['fields'][$z]['description']['en-us'] = 'Enter the destination use.';
+		$z++;
 		$apps[$x]['db'][$y]['fields'][$z]['name'] = 'destination_enabled';
 		$apps[$x]['db'][$y]['fields'][$z]['type'] = 'text';
 		$apps[$x]['db'][$y]['fields'][$z]['description']['en-us'] = 'Select to enable or disable.';
@@ -99,5 +134,32 @@
 		$apps[$x]['db'][$y]['fields'][$z]['search'] = 'true';
 		$apps[$x]['db'][$y]['fields'][$z]['description']['en-us'] = 'Enter the description.';
 		$z++;
+		$apps[$x]['db'][$y]['fields'][$z]['name'] = 'destination_order';
+		$apps[$x]['db'][$y]['fields'][$z]['type'] = 'text';
+		$apps[$x]['db'][$y]['fields'][$z]['description']['en-us'] = 'Enter destination order.';
+		$z++;
+		$apps[$x]['db'][$y]['fields'][$z]['name'] = "insert_date";
+		$apps[$x]['db'][$y]['fields'][$z]['type']['pgsql'] = 'timestamptz';
+		$apps[$x]['db'][$y]['fields'][$z]['type']['sqlite'] = 'date';
+		$apps[$x]['db'][$y]['fields'][$z]['type']['mysql'] = 'date';
+		$apps[$x]['db'][$y]['fields'][$z]['description']['en-us'] = "";
+		$z++;
+		$apps[$x]['db'][$y]['fields'][$z]['name'] = "insert_user";
+		$apps[$x]['db'][$y]['fields'][$z]['type']['pgsql'] = "uuid";
+		$apps[$x]['db'][$y]['fields'][$z]['type']['sqlite'] = "text";
+		$apps[$x]['db'][$y]['fields'][$z]['type']['mysql'] = "char(36)";
+		$apps[$x]['db'][$y]['fields'][$z]['description']['en-us'] = "";
+		$z++;
+		$apps[$x]['db'][$y]['fields'][$z]['name'] = "update_date";
+		$apps[$x]['db'][$y]['fields'][$z]['type']['pgsql'] = 'timestamptz';
+		$apps[$x]['db'][$y]['fields'][$z]['type']['sqlite'] = 'date';
+		$apps[$x]['db'][$y]['fields'][$z]['type']['mysql'] = 'date';
+		$apps[$x]['db'][$y]['fields'][$z]['description']['en-us'] = "";
+		$z++;
+		$apps[$x]['db'][$y]['fields'][$z]['name'] = "update_user";
+		$apps[$x]['db'][$y]['fields'][$z]['type']['pgsql'] = "uuid";
+		$apps[$x]['db'][$y]['fields'][$z]['type']['sqlite'] = "text";
+		$apps[$x]['db'][$y]['fields'][$z]['type']['mysql'] = "char(36)";
+		$apps[$x]['db'][$y]['fields'][$z]['description']['en-us'] = "";
 
 ?>
