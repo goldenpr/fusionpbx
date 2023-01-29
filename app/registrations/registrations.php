@@ -25,11 +25,8 @@
 	James Rose <james.o.rose@gmail.com>
 */
 
-//set the include path
-	$conf = glob("{/usr/local/etc,/etc}/fusionpbx/config.conf", GLOB_BRACE);
-	set_include_path(parse_ini_file($conf[0])['document.root']);
-
-//includes fileshp";
+//includes
+	include "root.php";
 	require_once "resources/require.php";
 	require_once "resources/check_auth.php";
 
@@ -183,8 +180,8 @@
 	echo "	<th class='hide-sm-dn'>".$text['label-ip']."</th>\n";
 	echo "	<th class='hide-sm-dn'>".$text['label-port']."</th>\n";
 	echo "	<th class='hide-md-dn'>".$text['label-hostname']."</th>\n";
-	echo " 	<th class='hide-sm-dn'>".$text['label-w_username']."</th>\n";
-	echo " 	<th class='hide-sm-dn'>".$text['label-w_password']."</th>\n";
+	echo " <th class='hide-sm-dn'>".$text['label-w_username']."</th>\n";
+	echo " <th class='hide-sm-dn'>".$text['label-w_password']."</th>\n";
 	echo "	<th class='pct-35' style='width: 35%;'>".$text['label-status']."</th>\n";
 	echo "	<th class='hide-md-dn'>".$text['label-ping']."</th>\n";
 	echo "	<th class='hide-md-dn'>".$text['label-sip_profile_name']."</th>\n";

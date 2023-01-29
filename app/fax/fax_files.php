@@ -17,18 +17,15 @@
 
 	The Initial Developer of the Original Code is
 	Mark J Crane <markjcrane@fusionpbx.com>
-	Portions created by the Initial Developer are Copyright (C) 2018-2022
+	Portions created by the Initial Developer are Copyright (C) 2018-2020
 	the Initial Developer. All Rights Reserved.
 
 	Contributor(s):
 	Mark J Crane <markjcrane@fusionpbx.com>
 */
 
-//set the include path
-	$conf = glob("{/usr/local/etc,/etc}/fusionpbx/config.conf", GLOB_BRACE);
-	set_include_path(parse_ini_file($conf[0])['document.root']);
-
-//includes files
+//includes
+	require_once "root.php";
 	require_once "resources/require.php";
 	require_once "resources/check_auth.php";
 	require_once "resources/paging.php";
@@ -118,34 +115,28 @@
 
 //download the fax
 	if ($_GET['a'] == "download") {
-
-		//sanitize the values that are used in the file name and path
-		$fax_extension = preg_replace('/[^0-9]/', '', $_GET['ext']);
-		$fax_filename = preg_replace('/[\/\\\&\%\#]/', '', $_GET['filename']);
-
-		//check if the file is in the inbox or sent directory.
+		//test to see if it is in the inbox or sent directory.
 		if ($_GET['type'] == "fax_inbox") {
-			if (file_exists($fax_dir.'/'.$fax_extension.'/inbox/'.$fax_filename)) {
-				$download_filename = $fax_dir.'/'.$fax_extension.'/inbox/'.$fax_filename;
+			if (file_exists($fax_dir.'/'.$_GET['ext'].'/inbox/'.$_GET['filename'])) {
+				$tmp_faxdownload_file = $fax_dir.'/'.$_GET['ext'].'/inbox/'.$_GET['filename'];
 			}
 		}
 		else if ($_GET['type'] == "fax_sent") {
-			if (file_exists($fax_dir.'/'.$fax_extension.'/sent/'.$_GET['filename'])) {
-				$download_filename = $fax_dir.'/'.$fax_extension.'/sent/'.$fax_filename;
+			if  (file_exists($fax_dir.'/'.$_GET['ext'].'/sent/'.$_GET['filename'])) {
+				$tmp_faxdownload_file = $fax_dir.'/'.$_GET['ext'].'/sent/'.$_GET['filename'];
 			}
 		}
-
-		//add the headers and stream the file
-		if (strlen($download_filename) > 0) {
-			$fd = fopen($download_filename, "rb");
+		//let's see if we found it
+		if (strlen($tmp_faxdownload_file) > 0) {
+			$fd = fopen($tmp_faxdownload_file, "rb");
 			if ($_GET['t'] == "bin") {
 				header("Content-Type: application/force-download");
 				header("Content-Type: application/octet-stream");
 				header("Content-Description: File Transfer");
-				header('Content-Disposition: attachment; filename="'.$fax_filename.'"');
+				header('Content-Disposition: attachment; filename="'.$_GET['filename'].'"');
 			}
 			else {
-				$file_ext = substr($fax_filename, -3);
+				$file_ext = substr($_GET['filename'], -3);
 				if ($file_ext == "tif") {
 					header("Content-Type: image/tiff");
 				}
@@ -162,7 +153,7 @@
 			header('Accept-Ranges: bytes');
 			header("Cache-Control: no-cache, must-revalidate"); // HTTP/1.1
 			header("Expires: Sat, 26 Jul 1997 05:00:00 GMT"); // date in the past
-			header("Content-Length: ".filesize($download_filename));
+			header("Content-Length: ".filesize($tmp_faxdownload_file));
 			fpassthru($fd);
 		}
 		else {
@@ -197,8 +188,7 @@
 	}
 
 //prepare to page the results
-	$sql = "select count(fax_file_uuid) ";
-	$sql .= "from v_fax_files ";
+	$sql = "select count(fax_file_uuid) from v_fax_files ";
 	$sql .= "where fax_uuid = :fax_uuid ";
 	$sql .= "and domain_uuid = :domain_uuid ";
 	if ($_REQUEST['box'] == 'inbox') {
@@ -221,42 +211,15 @@
 	list($paging_controls_mini, $rows_per_page) = paging($num_rows, $param, $rows_per_page, true);
 	$offset = $rows_per_page * $page;
 
-//set the time zone
-	if (isset($_SESSION['domain']['time_zone']['name'])) {
-		$time_zone = $_SESSION['domain']['time_zone']['name'];
-	}
-	else {
-		$time_zone = date_default_timezone_get();
-	}
-	$parameters['time_zone'] = $time_zone;
-
-//set the time format options: 12h, 24h
-	if (isset($_SESSION['domain']['time_format']['text'])) {
-		if ($_SESSION['domain']['time_format']['text'] == '12h') {
-			$time_format = 'HH12:MI:SS am';
-		}
-		elseif ($_SESSION['domain']['time_format']['text'] == '24h') {
-			$time_format = 'HH24:MI:SS';
-		}
-	}
-	else {
-		$time_format = 'HH12:MI:SS am';
-	}
-
 //get the list
-	$sql = "select domain_uuid, fax_file_uuid, fax_uuid, fax_mode, \n";
-	$sql .= "fax_destination, fax_file_type, fax_file_path, fax_caller_id_name, \n";
-	$sql .= "fax_caller_id_number, fax_epoch, fax_base64, fax_date, \n";
-	$sql .= "to_char(timezone(:time_zone, fax_date), 'DD Mon YYYY') as fax_date_formatted, \n";
-	$sql .= "to_char(timezone(:time_zone, fax_date), '".$time_format."') as fax_time_formatted \n";
-	$sql .= "from v_fax_files \n";
-	$sql .= "where fax_uuid = :fax_uuid \n";
-	$sql .= "and domain_uuid = :domain_uuid \n";
+	$sql = "select * from v_fax_files ";
+	$sql .= "where fax_uuid = :fax_uuid ";
+	$sql .= "and domain_uuid = :domain_uuid ";
 	if ($_REQUEST['box'] == 'inbox') {
-		$sql .= "and fax_mode = 'rx' \n";
+		$sql .= "and fax_mode = 'rx' ";
 	}
 	if ($_REQUEST['box'] == 'sent') {
-		$sql .= "and fax_mode = 'tx' \n";
+		$sql .= "and fax_mode = 'tx' ";
 	}
 	$parameters['fax_uuid'] = $fax_uuid;
 	$parameters['domain_uuid'] = $domain_uuid;
@@ -440,7 +403,8 @@
 				}
 			}
 			echo "  </td>\n";
-			echo "	<td>".$row['fax_date_formatted']." ".$row['fax_time_formatted']."&nbsp;</td>\n";
+			$fax_date = ($_SESSION['domain']['time_format']['text'] == '12h') ? date("F d Y H:i", $row['fax_epoch']) : date("F d Y H:i", $row['fax_epoch']);
+			echo "	<td>".$fax_date."&nbsp;</td>\n";
 			echo "</tr>\n";
 			$x++;
 		}
@@ -452,6 +416,7 @@
 	echo "<div align='center'>".$paging_controls."</div>\n";
 	echo "<input type='hidden' name='".$token['name']."' value='".$token['hash']."'>\n";
 	echo "</form>\n";
+
 
 //include the footer
 	require_once "resources/footer.php";

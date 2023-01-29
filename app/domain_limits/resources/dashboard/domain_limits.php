@@ -1,10 +1,7 @@
 <?php
 
-//set the include path
-	$conf = glob("{/usr/local/etc,/etc}/fusionpbx/config.conf", GLOB_BRACE);
-	set_include_path(parse_ini_file($conf[0])['document.root']);
-
-//includes files
+//includes
+	require_once "root.php";
 	require_once "resources/require.php";
 
 //check permisions
@@ -21,11 +18,6 @@
 	$language = new text;
 	$text = $language->get($_SESSION['domain']['language']['code'], 'core/user_settings');
 
-//connect to the database
-	if (!isset($database)) {
-		$database = new database;
-	}
-
 //domain limits
 	if (is_array($_SESSION['limit']) && sizeof($_SESSION['limit']) > 0) {
 		echo "<div class='hud_box'>\n";
@@ -38,6 +30,7 @@
 			$sql = "select count(extension_uuid) from v_extensions ";
 			$sql .= "where domain_uuid = :domain_uuid ";
 			$parameters['domain_uuid'] = $_SESSION['domain_uuid'];
+			$database = new database;
 			$extension_total = $database->select($sql, $parameters, 'column');
 			unset($sql, $parameters);
 
@@ -49,6 +42,7 @@
 			$sql = "select count(destination_uuid) from v_destinations ";
 			$sql .= "where domain_uuid = :domain_uuid ";
 			$parameters['domain_uuid'] = $_SESSION['domain_uuid'];
+			$database = new database;
 			$destination_total = $database->select($sql, $parameters, 'column');
 			unset($sql, $parameters);
 
@@ -71,37 +65,43 @@
 			</div>
 
 			<script>
-				const domain_limits_chart = new Chart(
-					document.getElementById('domain_limits_chart').getContext('2d'),
-					{
-						type: 'doughnut',
-						data: {
-							datasets: [{
-								data:['<?php echo $hud_stat; ?>', 0.00001],
-								borderColor: 'rgba(0,0,0,0)',
-								backgroundColor: ['#2a9df4', '#d4d4d4'],
-								cutout: chart_cutout
-							}]
-						},
-						options: {
-							responsive: true,
-							maintainAspectRatio: false,
-							plugins: {
-								chart_counter: {
-									chart_text: '<?php echo $hud_stat; ?>',
-								},
-								legend: {
-									display: false
-								},
-								title: {
-									display: true,
-									text: '<?php echo $text['label-domain_limits']; ?>',
-									fontFamily: chart_text_font
-								}
+				var domain_limits_chart_context = document.getElementById('domain_limits_chart').getContext('2d');
+
+				const domain_limits_chart_data = {
+					datasets: [{
+						data:['<?php echo $hud_stat; ?>', 0.00001],
+						borderColor: 'rgba(0,0,0,0)',
+						backgroundColor: ['#2a9df4', '#d4d4d4'],
+						cutout: chart_cutout
+					}]
+				};
+	
+				const domain_limits_chart_config = {
+					type: 'doughnut',
+					data: domain_limits_chart_data,
+					options: {
+						responsive: true,
+						maintainAspectRatio: false,
+						plugins: {
+							chart_counter: {
+								chart_text: '<?php echo $hud_stat; ?>',
+							},
+							legend: {
+								display: false
+							},
+							title: {
+								display: true,
+								text: '<?php echo $text['label-domain_limits']; ?>',
+								fontFamily: chart_text_font
 							}
-						},
-						plugins: [chart_counter],
-					}
+						}
+					},
+					plugins: [chart_counter],
+				};
+	
+				const domain_limits_chart = new Chart(
+					domain_limits_chart_context,
+					domain_limits_chart_config
 				);
 			</script>
 			<?php

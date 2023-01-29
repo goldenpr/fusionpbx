@@ -87,14 +87,14 @@
     <!-- # Firmware Upgrade and Privisioning. 0 - TFTP Upgrade, 1 - HTTP Upgrade, 2 - HTTPS Upgrade, 3 - FTP Upgrade, 4 - FTPS Upgrade. -->
     <!-- # Number: 0, 1, 2, 3, 4 -->
     <!-- # Mandatory -->
-    <P212>2</P212>
+    <P212>1</P212>
 
     <!-- Firmware Server Path -->
     <!-- Server address -->
     {if isset($grandstream_firmware_path) && isset($firmware_version)}
-    <P192>{$grandstream_firmware_path}/ht802/{$firmware_version}</P192>
+    <P192>{$grandstream_firmware_path}</P192>
     {elseif isset($grandstream_firmware_path)}
-    <P192>{$grandstream_firmware_path}/ht802</P192>
+    <P192>{$grandstream_firmware_path}</P192>
     {else}
     <P192>{$domain_name}{$project_path}/app/provision</P192>
     {/if}
@@ -147,7 +147,7 @@
     <!-- # 3CX Auto Provision. 0 - No, 1 - Yes. Default is Yes. -->
     <!-- # Number: 0, 1 -->
     <!-- # Mandatory -->
-    <P1414>1</P1414>
+    <P1414>0</P1414>
 
     <!-- # Automatic Upgrade. 0 - No, 1 - Check daily, 2 - Check weekly, 3 - Check every () minutes. Default is No. -->
     <!-- # Number: 0, 1, 2, 3 -->
@@ -188,7 +188,7 @@
     <!-- # 2=Always Skip the Firmware Check -->
     <!-- # Number: 0, 1, 2 -->
     <!-- # Mandatory -->
-    <P238>0</P238>
+    <P238>1</P238>
 
     <!-- # Disable SIP NOTIFY Authentication. 0 - No, 1 - Yes. Default is Yes. -->
     <!-- # Number: 0, 1 -->
@@ -470,7 +470,7 @@
 
     <!-- # NTP Server -->
     <!-- # Server address -->
-    <P30>us.pool.ntp.org</P30>
+    <P30>il.pool.ntp.org</P30>
 
     <!-- # Allow DHCP Option 42 to override NTP server. 0 - No, 1 - Yes. Default is No. -->
     <!-- # When set to Yes(1), it will override the configured NTP server. -->
@@ -549,7 +549,7 @@
     <!-- # Prefer Primary SIP Server. 0 - No, 1 - Yes. -->
     <!-- # Number: 0, 1 -->
     <!-- # Mandatory -->
-    <P4567>0</P4567>
+    <P4567>1</P4567>
 
     <!-- # Outbound Proxy -->
     <!-- # Server address -->
@@ -689,7 +689,7 @@
     <!-- # Local SIP port (default 5060) -->
     <!-- # Number: 1 to 65535 -->
     <!-- # Mandatory -->
-    <P40>5060</P40>
+    <P40>5080</P40>
 
     <!-- # Local RTP port (1024-65535, default 5004) -->
     <!-- # Number: 1024 to 65535 -->
@@ -788,12 +788,12 @@
     <!-- # Use P-Access-Network-Info Header. 0 - No, 1 - Yes. Default is 1. -->
     <!-- # Number: 0, 1 -->
     <!-- # Mandatory -->
-    <P26058>1</P26058>
+    <P26058>0</P26058>
 
     <!-- # Use P-Emergency-Info Header. 0 - No, 1 - Yes. Default is 1. -->
     <!-- # Number: 0, 1 -->
     <!-- # Mandatory -->
-    <P26059>1</P26059>
+    <P26059>0</P26059>
 
     <!-- # SIP REGISTER Contact Header Uses. 0 - LAN address, 1 - WAN address -->
     <!-- # Number: 0, 1, 2 -->
@@ -946,12 +946,12 @@
     <!-- # Disable Call-Waiting Caller ID. 0 - No, 1 - Yes -->
     <!-- # Number: 0, 1 -->
     <!-- # Mandatory -->
-    <P714>0</P714>
+    <P714>1</P714>
 
     <!-- # Disable Call-Waiting Tone. 0 - No, 1 - Yes -->
     <!-- # Number: 0, 1 -->
     <!-- # Mandatory -->
-    <P186>0</P186>
+    <P186>1</P186>
 
     <!-- # Disable Connected Line ID. 0=Disabled, 1=Enabled. (If yes, Connected Line ID will not be displayed even received.) -->
     <!-- # Number: 0, 1 -->
@@ -991,7 +991,7 @@
     <!-- # Ring Timeout. (10-300, default is 60 seconds) -->
     <!-- # Number: 10-300 -->
     <!-- # Mandatory -->
-    <P185>60</P185>
+    <P185>0</P185>
 
     <!-- # Delayed Call Forward Wait Time. Allowed range 1-120, in seconds. Default 20 seconds. -->
     <!-- # Number: 1-120 -->
@@ -1001,7 +1001,7 @@
     <!-- # No Key Entry Timeout. Default - 4 seconds. -->
     <!-- # Number: 1-15 -->
     <!-- # Mandatory -->
-    <P85>4</P85>
+    <P85>15</P85>
 
     <!-- # Early Dial. 0 - No, 1 - Yes (use "Yes" only if proxy supports 484 response) -->
     <!-- # Number: 0, 1 -->
@@ -1065,7 +1065,7 @@
     <!-- # Session Expiration (in seconds. default 180 seconds. Allowed value: 90-64800) -->
     <!-- # Number: 90-64800 -->
     <!-- # Mandatory -->
-    <P260>180</P260>
+    <P260>90</P260>
 
     <!-- # Minimum SE (in seconds. default 90 seconds, must be lower than or equal to P260) -->
     <!-- # Number: 90-64800 -->
@@ -1128,12 +1128,12 @@
     <!-- # Choice 1. -->
     <!-- # Number: 0, 2, 4, 8, 18, 97， 123 -->
     <!-- # Mandatory  -->
-    <P57>0</P57>
+    <P57>8</P57>
 
     <!-- # Choice 2. -->
     <!-- # Number: 0, 2, 4, 8, 18, 97， 123 -->
     <!-- # Mandatory -->
-    <P58>8</P58>
+    <P58>0</P58>
 
     <!-- # Choice 3.  -->
     <!-- # Number: 0, 2, 4, 8, 18, 97， 123 -->
@@ -1199,7 +1199,7 @@
     <!-- # Number: 0, 1 -->
     <!-- # Mandatory -->
 {if isset($grandstream_fax_mode)}
-    <P228>1</P228>
+    <P228>$grandstream_fax_mode</P228>
 {else}
     <P228>0</P228>
 {/if}
@@ -1207,17 +1207,17 @@
     <!-- # Re-INVITE After Fax Tone Detected. 0 - Disabled, 1 - Enabled. -->
     <!-- # Number: 0, 1 -->
     <!-- # Mandatory -->
-    <P4416>1</P4416>
+    <P4416>0</P4416>
 
     <!-- # Jitter buffer type.  0 - Fixed, 1 - Adaptive -->
     <!-- # Number: 0, 1 -->
     <!-- # Mandatory -->
-    <P133>1</P133>
+    <P133>0</P133>
 
     <!-- # Jitter buffer length. 0 - Low, 1 - Medium, 2 - High -->
     <!-- # Number: 0, 1, 2 -->
     <!-- # Mandatory -->
-    <P132>1</P132>
+    <P132>2</P132>
 
     <!-- # SRTP Mode -->
     <!-- # 0=Disabled -->
@@ -1368,26 +1368,12 @@
     <!-- # Disable Line Echo Canceller (LEC).  0 - No, 1 - Yes -->
     <!-- # Number: 0, 1 -->
     <!-- # Mandatory -->
-    {if isset($line_echo_canceller)} 
-        <P824>{$line_echo_canceller}</P824>
-    {elseif isset($line_1_echo_canceller)} 
-        <P824>{$line_1_echo_canceller}</P824>
-    {else}
-        <P824>0</P824>
-    {/if}
-
-    
+    <P824>1</P824>
 
     <!-- # Disable Network Echo Suppressor.  0 - No, 1 - Yes -->
     <!-- # Number: 0, 1 -->
     <!-- # Mandatory -->
-    {if isset($line_echo_suppressor)} 
-        <P4441>{$line_echo_suppressor}</P4441>
-    {elseif isset($line_1_echo_suppressor)} 
-        <P4441>{$line_1_echo_suppressor}</P4441>
-    {else}
-        <P4441>0</P4441>
-    {/if}
+    <P4441>1</P4441>
 
     <!-- # Outgoing Call Duration Limit.  (0-180 minutes, default is 0 (No Limit)) -->
     <!-- # Number: 0~180 -->
@@ -1472,7 +1458,7 @@
     <!-- # Prefer Primary SIP Server. 0 - No, 1 - Yes. -->
     <!-- # Number: 0, 1 -->
     <!-- # Mandatory -->
-    <P4568>0</P4568>
+    <P4568>1</P4568>
 
     <!-- # Outbound Proxy -->
     <!-- # Server address -->
@@ -1510,7 +1496,7 @@
     <!-- # NAT Traversal (STUN). 0 - No, 2 - No but send keep-alive, 1 - Yes, 3 - UPnP, -->
     <!-- # Number: 0, 1, 2, 3 -->
     <!-- # Mandatory -->
-    <P730>0</P730>
+    <P730>2</P730>
 
 <!-- SIP User ID -->
 <!-- String -->
@@ -1700,12 +1686,12 @@
     <!-- # Use P-Access-Network-Info Header. 0 - No, 1 - Yes. Default is 1. -->
     <!-- # Number: 0, 1 -->
     <!-- # Mandatory -->
-    <P26158>1</P26158>
+    <P26158>0</P26158>
 
     <!-- # Use P-Emergency-Info Header. 0 - No, 1 - Yes. Default is 1. -->
     <!-- # Number: 0, 1 -->
     <!-- # Mandatory -->
-    <P26159>1</P26159>
+    <P26159>0</P26159>
 
     <!-- # SIP REGISTER Contact Header Uses. 0 - LAN address, 1 - WAN address -->
     <!-- # Number: 0, 1, 2 -->
@@ -1789,7 +1775,7 @@
     <!-- # Enable Call Features. 0 - No, 1 - Yes  -->
     <!-- # Number: 0, 1 -->
     <!-- # Mandatory -->
-    <P751>1</P751>
+    <P751>0</P751>
 
     <!-- # Offhook Auto-Dial (User ID/extension to dial automatically when offhook) -->
     <!-- # String: 0-9, *, # -->
@@ -1851,18 +1837,18 @@
     {if isset($grandstream_call_waiting)}
     <P791>{$grandstream_call_waiting}</P791>
     {else}
-    <P791>0</P791>
+    <P791>1</P791>
     {/if}
 
     <!-- # Disable Call-Waiting Caller ID. 0 - No, 1 - Yes -->
     <!-- # Number: 0, 1 -->
     <!-- # Mandatory -->
-    <P823>0</P823>
+    <P823>1</P823>
 
     <!-- # Disable Call-Waiting Tone. 0 - No, 1 - Yes -->
     <!-- # Number: 0, 1 -->
     <!-- # Mandatory -->
-    <P817>0</P817>
+    <P817>1</P817>
 
     <!-- # Disable Connected Line ID. 0=Disabled, 1=Enabled. (If yes, Connected Line ID will not be displayed even received.) -->
     <!-- # Number: 0, 1 -->
@@ -1902,7 +1888,7 @@
     <!-- # Ring Timeout. (10-300, default is 60 seconds) -->
     <!-- # Number: 10-300 -->
     <!-- # Mandatory -->
-    <P816>60</P816>
+    <P816>0</P816>
 
     <!-- # Delayed Call Forward Wait Time. Allowed range 1-120, in seconds. Default 20 seconds. -->
     <!-- # Number: 1-120 -->
@@ -1912,7 +1898,7 @@
     <!-- # No Key Entry Timeout. Default - 4 seconds. -->
     <!-- # Number: 1-15 -->
     <!-- # Mandatory -->
-    <P292>4</P292>
+    <P292>15</P292>
 
     <!-- # Early Dial. 0 - No, 1 - Yes (use "Yes" only if proxy supports 484 response) -->
     <!-- # Number: 0, 1 -->
@@ -1965,7 +1951,7 @@
     <!-- # Session Expiration (in seconds. default 180 seconds. Allowed value: 90-64800) -->
     <!-- # Number: 90-64800 -->
     <!-- # Mandatory -->
-    <P434>180</P434>
+    <P434>90</P434>
 
     <!-- # Minimum SE (in seconds. default 90 seconds, must be lower than or equal to P260) -->
     <!-- # Number: 90-64800 -->
@@ -2028,12 +2014,12 @@
     <!-- # Choice 1.  -->
     <!-- # Number: 0, 2, 4, 8, 18, 98 -->
     <!-- # Mandatory -->
-    <P757>0</P757>
+    <P757>8</P757>
 
     <!-- # Choice 2.  -->
     <!-- # Number: 0, 2, 4, 8, 18, 98 -->
     <!-- # Mandatory -->
-    <P758>8</P758>
+    <P758>0</P758>
 
     <!-- # Choice 3.  -->
     <!-- # Number: 0, 2, 4, 8, 18, 98 -->
@@ -2103,17 +2089,17 @@
     <!-- # Re-INVITE After Fax Tone Detected. 0 - Disabled, 1 - Enabled. -->
     <!-- # Number: 0, 1 -->
     <!-- # Mandatory -->
-    <P4417>1</P4417>
+    <P4417>0</P4417>
 
     <!-- # Jitter buffer type.  0 - Fixed, 1 - Adaptive -->
     <!-- # Number: 0, 1 -->
     <!-- # Mandatory -->
-    <P831>1</P831>
+    <P831>0</P831>
 
     <!-- # Jitter buffer length. 0 - Low, 1 - Medium, 2 - High -->
     <!-- # Number: 0, 1, 2 -->
     <!-- # Mandatory -->
-    <P832>1</P832>
+    <P832>2</P832>
 
     <!-- # SRTP Mode -->
     <!-- # 0=Disabled -->
@@ -2225,7 +2211,7 @@
     <!-- # On Hook Timing. (In 40-2000 milliseconds range, default is 400) -->
     <!-- # Number: 40 to 2000 -->
     <!-- # Mandatory -->
-    <P834>400</P834>
+    <P834>40</P834>
 
     <!-- # Gain: -->
     <!-- # TX  -->
@@ -2255,26 +2241,12 @@
     <!-- # Disable Line Echo Canceller (LEC).  0 - No, 1 - Yes -->
     <!-- # Number: 0, 1 -->
     <!-- # Mandatory -->
-    {if isset($line_echo_canceller)} 
-        <P825>{$line_echo_canceller}</P825>
-    {elseif isset($line_2_echo_canceller)} 
-        <P825>{$line_2_echo_canceller}</P825>
-    {else}
-        <P825>0</P825>
-    {/if}
-
-    
+    <P825>1</P825>
 
     <!-- # Disable Network Echo Suppressor.  0 - No, 1 - Yes -->
     <!-- # Number: 0, 1 -->
     <!-- # Mandatory -->
-    {if isset($line_echo_suppressor)} 
-        <P4442>{$line_echo_suppressor}</P4442>
-    {elseif isset($line_2_echo_suppressor)} 
-        <P4442>{$line_2_echo_suppressor}</P4442>
-    {else}
-        <P4442>0</P4442>
-    {/if}
+    <P4442>1</P4442>
 
     <!-- # Outgoing Call Duration Limit.  (0-180 minutes, default is 0 (No Limit)) -->
     <!-- # Number: 0~180 -->

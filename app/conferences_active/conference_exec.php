@@ -27,7 +27,7 @@
 
 	The Initial Developer of the Original Code is
 	Mark J Crane <markjcrane@fusionpbx.com>
-	Portions created by the Initial Developer are Copyright (C) 2008-2022
+	Portions created by the Initial Developer are Copyright (C) 2008-2020
 	the Initial Developer. All Rights Reserved.
 
 	Contributor(s):
@@ -36,11 +36,8 @@
 
 */
 
-//set the include path
-	$conf = glob("{/usr/local/etc,/etc}/fusionpbx/config.conf", GLOB_BRACE);
-	set_include_path(parse_ini_file($conf[0])['document.root']);
-
 //includes
+	include "root.php";
 	require_once "resources/require.php";
 	require_once "resources/check_auth.php";
 
@@ -80,12 +77,12 @@
 
 //validate the name
 	if (!is_uuid($name)) {
-		$sql = "select conference_extension ";
+		$sql = "select conference_name ";
 		$sql .= "from v_conferences ";
 		$sql .= "where domain_uuid = :domain_uuid ";
-		$sql .= "and conference_extension = :conference_extension ";
+		$sql .= "and conference_name = :conference_name ";
 		$parameters['domain_uuid'] = $_SESSION['domain_uuid'];
-		$parameters['conference_extension'] = $name;
+		$parameters['conference_name'] = $name;
 		$database = new database;
 		$name = $database->select($sql, $parameters, 'column');
 		unset ($parameters, $sql);
@@ -177,8 +174,6 @@
 		}
 		unset($uuid);
 	}
-
-
 
 //execute the command
 	if (count($_GET) > 0) {

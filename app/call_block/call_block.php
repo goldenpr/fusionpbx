@@ -17,7 +17,7 @@
 
 	The Initial Developer of the Original Code is
 	Mark J Crane <markjcrane@fusionpbx.com>
-	Portions created by the Initial Developer are Copyright (C) 2008-2023
+	Portions created by the Initial Developer are Copyright (C) 2008-2019
 	the Initial Developer. All Rights Reserved.
 
 	Contributor(s):
@@ -27,11 +27,8 @@
 	All of it has been rewritten over years.
 */
 
-//set the include path
-	$conf = glob("{/usr/local/etc,/etc}/fusionpbx/config.conf", GLOB_BRACE);
-	set_include_path(parse_ini_file($conf[0])['document.root']);
-
-//includes files
+//includes
+	require_once "root.php";
 	require_once "resources/require.php";
 	require_once "resources/check_auth.php";
 	require_once "resources/paging.php";
@@ -84,16 +81,23 @@
 	$order = $_GET["order"];
 
 //add the search term
-	if (isset($_GET["search"])) {
-		$search = strtolower($_GET["search"]);
+	$search = strtolower($_GET["search"]);
+	if (strlen($search) > 0) {
+		$sql_search = " (";
+		$sql_search .= "lower(call_block_name) like :search ";
+		$sql_search .= "or call_block_country_code like :search ";
+		$sql_search .= "or lower(call_block_number) like :search ";
+		$sql_search .= "or lower(call_block_description) like :search ";
+		$sql_search .= ") ";
+		$parameters['search'] = '%'.$search.'%';
 	}
 
 //prepare to page the results
 	$sql = "select count(*) from view_call_block ";
 	$sql .= "where true ";
-	if ($_GET['show'] == "all" && permission_exists('call_block_all')) {
-		//$sql .= "and (domain_uuid = :domain_uuid or domain_uuid is null) ";
-		//$parameters['domain_uuid'] = $_SESSION['domain_uuid'];
+	if ($_GET['show'] == "all" && permission_exists('call_forward_all')) {
+		$sql .= "and (domain_uuid = :domain_uuid or domain_uuid is null) ";
+		$parameters['domain_uuid'] = $_SESSION['domain_uuid'];
 	}
 	else {
 		$sql .= "and (domain_uuid = :domain_uuid) ";
@@ -110,16 +114,8 @@
 		}
 		$sql .= ") ";
 	}
-	if (isset($search)) {
-		$sql .= "and (";
-		$sql .= " lower(call_block_name) like :search ";
-		$sql .= " or lower(call_block_direction) like :search ";
-		$sql .= " or lower(call_block_number) like :search ";
-		$sql .= " or lower(call_block_app) like :search ";
-		$sql .= " or lower(call_block_data) like :search ";
-		$sql .= " or lower(call_block_description) like :search ";
-		$sql .= ") ";
-		$parameters['search'] = '%'.$search.'%';
+	if (isset($sql_search)) {
+		$sql .= "and ".$sql_search;
 	}
 	$database = new database;
 	$num_rows = $database->select($sql, $parameters, 'column');
@@ -128,7 +124,7 @@
 //prepare to page the results
 	$rows_per_page = ($_SESSION['domain']['paging']['numeric'] != '') ? $_SESSION['domain']['paging']['numeric'] : 50;
 	$param = "&search=".$search;
-	if ($_GET['show'] == "all" && permission_exists('call_block_all')) {
+	if ($_GET['show'] == "all" && permission_exists('call_forward_all')) {
 		$param .= "&show=all";
 	}
 	$page = $_GET['page'];
@@ -140,9 +136,9 @@
 //get the list
 	$sql = "select * from view_call_block ";
 	$sql .= "where true ";
-	if ($_GET['show'] == "all" && permission_exists('call_block_all')) {
-		//$sql .= "and (domain_uuid = :domain_uuid or domain_uuid is null) ";
-		//$parameters['domain_uuid'] = $_SESSION['domain_uuid'];
+	if ($_GET['show'] == "all" && permission_exists('call_forward_all')) {
+		$sql .= "and (domain_uuid = :domain_uuid or domain_uuid is null) ";
+		$parameters['domain_uuid'] = $_SESSION['domain_uuid'];
 	}
 	else {
 		$sql .= "and (domain_uuid = :domain_uuid) ";
@@ -159,16 +155,8 @@
 		}
 		$sql .= ") ";
 	}
-	if (isset($search)) {
-		$sql .= "and (";
-		$sql .= " lower(call_block_name) like :search ";
-		$sql .= " or lower(call_block_direction) like :search ";
-		$sql .= " or lower(call_block_number) like :search ";
-		$sql .= " or lower(call_block_app) like :search ";
-		$sql .= " or lower(call_block_data) like :search ";
-		$sql .= " or lower(call_block_description) like :search ";
-		$sql .= ") ";
-		$parameters['search'] = '%'.$search.'%';
+	if (isset($sql_search)) {
+		$sql .= "and ".$sql_search;
 	}
 	$sql .= order_by($order_by, $order, ['call_block_country_code','call_block_number']);
 	$sql .= limit_offset($rows_per_page, $offset);
@@ -201,7 +189,7 @@
 		echo button::create(['type'=>'button','label'=>$text['button-delete'],'icon'=>$_SESSION['theme']['button_icon_delete'],'id'=>'btn_delete','name'=>'btn_delete','style'=>'display: none;','onclick'=>"modal_open('modal-delete','btn_delete');"]);
 	}
 	echo 		"<form id='form_search' class='inline' method='get'>\n";
-	if (permission_exists('call_block_all')) {
+	if (permission_exists('call_forward_all')) {
 		if ($_GET['show'] == 'all') {
 			echo "		<input type='hidden' name='show' value='all'>";
 		}

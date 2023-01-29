@@ -22,11 +22,8 @@
 	the Initial Developer. All Rights Reserved.
 */
 
-//set the include path
-	$conf = glob("{/usr/local/etc,/etc}/fusionpbx/config.conf", GLOB_BRACE);
-	set_include_path(parse_ini_file($conf[0])['document.root']);
-
-//includes files
+//includes
+	require_once "root.php";
 	require_once "resources/require.php";
 	require_once "resources/check_auth.php";
 
@@ -59,7 +56,6 @@
 		$dashboard_path = $_POST["dashboard_path"];
 		$dashboard_groups = $_POST["dashboard_groups"];
 		$dashboard_column_span = $_POST["dashboard_column_span"];
-		$dashboard_details_state = $_POST["dashboard_details_state"];
 		$dashboard_order = $_POST["dashboard_order"];
 		$dashboard_enabled = $_POST["dashboard_enabled"];
 		$dashboard_description = $_POST["dashboard_description"];
@@ -157,7 +153,6 @@
 			$array['dashboard'][0]['dashboard_name'] = $dashboard_name;
 			$array['dashboard'][0]['dashboard_path'] = $dashboard_path;
 			$array['dashboard'][0]['dashboard_column_span'] = $dashboard_column_span;
-			$array['dashboard'][0]['dashboard_details_state'] = $dashboard_details_state;
 			$array['dashboard'][0]['dashboard_order'] = $dashboard_order;
 			$array['dashboard'][0]['dashboard_enabled'] = $dashboard_enabled;
 			$array['dashboard'][0]['dashboard_description'] = $dashboard_description;
@@ -202,7 +197,6 @@
 		$sql .= " dashboard_name, ";
 		$sql .= " dashboard_path, ";
 		$sql .= " dashboard_column_span, ";
-		$sql .= " dashboard_details_state, ";
 		$sql .= " dashboard_order, ";
 		$sql .= " cast(dashboard_enabled as text), ";
 		$sql .= " dashboard_description ";
@@ -216,7 +210,6 @@
 			$dashboard_path = $row["dashboard_path"];
 			$dashboard_groups = $row["dashboard_groups"];
 			$dashboard_column_span = $row["dashboard_column_span"];
-			$dashboard_details_state = $row["dashboard_details_state"];
 			$dashboard_order = $row["dashboard_order"];
 			$dashboard_enabled = $row["dashboard_enabled"];
 			$dashboard_description = $row["dashboard_description"];
@@ -240,11 +233,6 @@
 //add the $dashboard_group_uuid
 	if (!is_uuid($dashboard_group_uuid)) {
 		$dashboard_group_uuid = uuid();
-	}
-
-//add a default value to $dashboard_details_state
-	if (!isset($dashboard_details_state)) {
-		$dashboard_details_state = "expanded";
 	}
 
 //add an empty row
@@ -405,36 +393,6 @@
 	echo "	</select>\n";
 	echo "<br />\n";
 	echo $text['description-dashboard_column_span']."\n";
-	echo "</td>\n";
-	echo "</tr>\n";
-
-	echo "<tr>\n";
-	echo "<td class='vncell' valign='top' align='left' nowrap='nowrap'>\n";
-	echo "	".$text['label-dashboard_details_state']."\n";
-	echo "</td>\n";
-	echo "<td class='vtable' style='position: relative;' align='left'>\n";
-	echo "	<select name='dashboard_details_state' class='formfld'>\n";
-	if ($dashboard_details_state == "expanded") {
-		echo "		<option value='expanded' selected='selected'>".$text['option-expanded']."</option>\n";
-	}
-	else {
-		echo "		<option value='expanded'>".$text['option-expanded']."</option>\n";
-	}
-	if ($dashboard_details_state == "contracted") {
-		echo "		<option value='contracted' selected='selected'>".$text['option-contracted']."</option>\n";
-	}
-	else {
-		echo "		<option value='contracted'>".$text['option-contracted']."</option>\n";
-	}
-	if ($dashboard_details_state == "hidden") {
-		echo "		<option value='hidden' selected='selected'>".$text['option-hidden']."</option>\n";
-	}
-	else {
-		echo "		<option value='hidden'>".$text['option-hidden']."</option>\n";
-	}
-	echo "	</select>\n";
-	echo "<br />\n";
-	echo $text['description-dashboard_details_state']."\n";
 	echo "</td>\n";
 	echo "</tr>\n";
 

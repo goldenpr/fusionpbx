@@ -1,6 +1,6 @@
 --      xml_handler.lua
 --      Part of FusionPBX
---      Copyright (C) 2016-2022 Mark J Crane <markjcrane@fusionpbx.com>
+--      Copyright (C) 2016-2020 Mark J Crane <markjcrane@fusionpbx.com>
 --      All rights reserved.
 --
 --      Redistribution and use in source and binary forms, with or without
@@ -206,8 +206,8 @@
 					if (not ivr_menu_greet_long_is_base64 and not file_exists(ivr_menu_greet_long)) then
 						if (file_exists(recordings_dir.."/"..domain_name.."/"..ivr_menu_greet_long)) then
 							ivr_menu_greet_long = recordings_dir.."/"..domain_name.."/"..ivr_menu_greet_long;
-						--elseif (file_exists(sounds_dir.."/en/us/callie/8000/"..ivr_menu_greet_long)) then
-						--	ivr_menu_greet_long = sounds_dir.."/${default_language}/${default_dialect}/${default_voice}/"..ivr_menu_greet_long;
+						elseif (file_exists(sounds_dir.."/en/us/callie/8000/"..ivr_menu_greet_long)) then
+							ivr_menu_greet_long = sounds_dir.."/${default_language}/${default_dialect}/${default_voice}/"..ivr_menu_greet_long;
 						end
 					end
 
@@ -216,8 +216,8 @@
 						if (not ivr_menu_greet_short_is_base64 and not file_exists(ivr_menu_greet_short)) then
 							if (file_exists(recordings_dir.."/"..domain_name.."/"..ivr_menu_greet_short)) then
 								ivr_menu_greet_short = recordings_dir.."/"..domain_name.."/"..ivr_menu_greet_short;
-							--elseif (file_exists(sounds_dir.."/en/us/callie/8000/"..ivr_menu_greet_short)) then
-							--	ivr_menu_greet_short = sounds_dir.."/${default_language}/${default_dialect}/${default_voice}/"..ivr_menu_greet_short;
+							elseif (file_exists(sounds_dir.."/en/us/callie/8000/"..ivr_menu_greet_short)) then
+								ivr_menu_greet_short = sounds_dir.."/${default_language}/${default_dialect}/${default_voice}/"..ivr_menu_greet_short;
 							end
 						end
 					else
@@ -266,7 +266,7 @@
 					table.insert(xml, [[				>]]);
 
 				--get the ivr menu options
-					local sql = [[ SELECT * FROM v_ivr_menu_options WHERE ivr_menu_uuid = :ivr_menu_uuid AND ivr_menu_option_enabled = 'true' ORDER BY ivr_menu_option_order asc ]];
+					local sql = [[SELECT * FROM v_ivr_menu_options WHERE ivr_menu_uuid = :ivr_menu_uuid ORDER BY ivr_menu_option_order asc ]];
 					local params = {ivr_menu_uuid = ivr_menu_uuid};
 					if (debug["sql"]) then
 						freeswitch.consoleLog("notice", "[ivr_menu] SQL: " .. sql .. "; params:" .. json.encode(params) .. "\n");
@@ -277,11 +277,9 @@
 						ivr_menu_option_action = r.ivr_menu_option_action
 						ivr_menu_option_param = r.ivr_menu_option_param
 						ivr_menu_option_description = r.ivr_menu_option_description
-						if (#ivr_menu_option_action > 0) then
-							table.insert(xml, [[					<entry action="]]..ivr_menu_option_action..[[" digits="]]..ivr_menu_option_digits..[[" param="]]..ivr_menu_option_param..[[" description="]]..ivr_menu_option_description..[["/>]]);
-							if (tonumber(ivr_menu_option_digits) and #ivr_menu_option_digits >= tonumber(direct_dial_digits_min)) then
-								table.insert(direct_dial_exclude, ivr_menu_option_digits);
-							end
+						table.insert(xml, [[					<entry action="]]..ivr_menu_option_action..[[" digits="]]..ivr_menu_option_digits..[[" param="]]..ivr_menu_option_param..[[" description="]]..ivr_menu_option_description..[["/>]]);
+						if (tonumber(ivr_menu_option_digits) and #ivr_menu_option_digits >= tonumber(direct_dial_digits_min)) then
+							table.insert(direct_dial_exclude, ivr_menu_option_digits);
 						end
 					end);
 

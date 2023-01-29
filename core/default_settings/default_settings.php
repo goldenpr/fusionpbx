@@ -17,18 +17,15 @@
 
 	The Initial Developer of the Original Code is
 	Mark J Crane <markjcrane@fusionpbx.com>
-	Portions created by the Initial Developer are Copyright (C) 2008 - 2022
+	Portions created by the Initial Developer are Copyright (C) 2008 - 2021
 	the Initial Developer. All Rights Reserved.
 
 	Contributor(s):
 	Mark J Crane <markjcrane@fusionpbx.com>
 */
 
-//set the include path
-	$conf = glob("{/usr/local/etc,/etc}/fusionpbx/config.conf", GLOB_BRACE);
-	set_include_path(parse_ini_file($conf[0])['document.root']);
-
-//includes files
+//includes
+	require_once "root.php";
 	require_once "resources/require.php";
 	require_once "resources/check_auth.php";
 
@@ -59,16 +56,6 @@
 	$search = preg_replace('#[^a-zA-Z0-9_\-\. ]#', '', $search);
 	$default_setting_category = preg_replace('#[^a-zA-Z0-9_\-\.]#', '', $default_setting_category);
 
-//build the query string
-	$query_string = '';
-	if ($search != '') {
-		$query_string .= 'search='.urlencode($search);
-	}
-	if ($default_setting_category != '') {
-		if ($query_string == '') { $query_string = ''; } else { $query_string .= '&'; }
-		$query_string .= 'default_setting_category='.urlencode($default_setting_category);
-	}
-
 //process the http post data by action
 	if ($action != '' && is_array($default_settings) && @sizeof($default_settings) != 0) {
 		switch ($action) {
@@ -92,7 +79,8 @@
 				}
 				break;
 		}
-		header('Location: default_settings.php?'.($query_string != '' ? $query_string : null));
+
+		header('Location: default_settings.php'.($search != '' ? '?search='.urlencode($search) : null));
 		exit;
 	}
 
@@ -265,10 +253,10 @@
 	echo "<div class='action_bar' id='action_bar'>\n";
 	echo "	<div class='heading'><b>".$text['title-default_settings']." (".number_format($num_rows).")</b></div>\n";
 	echo "	<div class='actions'>\n";
-	echo button::create(['type'=>'button','label'=>$text['label-domain'],'icon'=>$_SESSION['theme']['button_icon_domain'],'style'=>'','link'=>PROJECT_PATH.'/core/domain_settings/domain_settings.php?id='.$domain_uuid]);
-	echo button::create(['label'=>$text['button-reload'],'icon'=>$_SESSION['theme']['button_icon_reload'],'type'=>'button','id'=>'button_reload','link'=>'default_settings_reload.php'.($search != '' ? '?search='.urlencode($search) : null),'style'=>'margin-right: 15px;']);
+	echo button::create(['type'=>'button','label'=>$text['label-domain'],'icon'=>$_SESSION['theme']['button_icon_all'],'style'=>'','link'=>PROJECT_PATH.'/core/domain_settings/domain_settings.php?id='.$domain_uuid]);
+	echo button::create(['label'=>$text['button-reload'],'icon'=>$_SESSION['theme']['button_icon_reset'],'type'=>'button','id'=>'button_reload','link'=>'default_settings_reload.php'.($search != '' ? '?search='.urlencode($search) : null),'style'=>'margin-right: 15px;']);
 	if (permission_exists('default_setting_add')) {
-		echo button::create(['type'=>'button','label'=>$text['button-add'],'icon'=>$_SESSION['theme']['button_icon_add'],'id'=>'btn_add','link'=>'default_setting_edit.php?'.$query_string]);
+		echo button::create(['type'=>'button','label'=>$text['button-add'],'icon'=>$_SESSION['theme']['button_icon_add'],'id'=>'btn_add','link'=>'default_setting_edit.php']);
 	}
 	if (permission_exists('default_setting_add') && $default_settings) {
 		if (permission_exists("domain_select") && permission_exists("domain_setting_add") && count($_SESSION['domains']) > 1) {
@@ -402,7 +390,7 @@
 				echo "</tr>\n";
 			}
 			if (permission_exists('default_setting_edit')) {
-				$list_row_url = "default_setting_edit.php?id=".urlencode($row['default_setting_uuid']).'&'.$query_string;
+				$list_row_url = "default_setting_edit.php?id=".urlencode($row['default_setting_uuid']);
 			}
 			echo "<tr class='list-row' href='".$list_row_url."'>\n";
 			if (permission_exists('default_setting_add') || permission_exists('default_setting_edit') || permission_exists('default_setting_delete')) {
@@ -422,8 +410,7 @@
 				echo escape($row['default_setting_subcategory']);
 			}
 			echo "	</td>\n";
-			$setting_types = ['Array','Boolean','Code','Dir','Name','Numeric','Text','UUID'];
-			echo "	<td class='hide-sm-dn'>".$setting_types[array_search(strtolower($row['default_setting_name']), array_map('strtolower',$setting_types))]."</td>\n";
+			echo "	<td class='hide-sm-dn'>".escape($row['default_setting_name'])."</td>\n";
 			echo "	<td class='overflow no-wrap' title=\"".escape($default_value)."\" style=\"".$setting_bold."\">\n";
 
 			$category = $row['default_setting_category'];
@@ -481,9 +468,6 @@
 			else if ($category == 'theme' && $subcategory == 'menu_side_item_main_sub_close' && $name == 'text') {
 				echo "		".$text['option-'.$row['default_setting_value']]."\n";
 			}
-			else if ($category == 'theme' && $subcategory == 'input_toggle_style' && $name == 'text') {
-				echo "		".$text['option-'.$row['default_setting_value']]."\n";
-			}
 			else if (substr_count($subcategory, "_color") > 0 && ($name == "text" || $name == 'array')) {
 				echo "		".(img_spacer('15px', '15px', 'background: '.escape($row['default_setting_value']).'; margin-right: 4px; vertical-align: middle; border: 1px solid '.(color_adjust($row['default_setting_value'], -0.18)).'; padding: -1px;'));
 				echo "<span style=\"font-family: 'Courier New'; line-height: 6pt;\">".escape($row['default_setting_value'])."</span>\n";
@@ -498,12 +482,6 @@
 				echo "		".$text['label-'.$row['default_setting_value']]."\n";
 			}
 			else if ($category == 'destinations' && $subcategory == 'select_mode' && $name == 'text') {
-				echo "		".$text['label-'.$row['default_setting_value']]."\n";
-			}
-			else if ($category == 'voicemail' && ($subcategory == 'message_caller_id_number' || $subcategory == 'message_date_time') && $name == 'text') {
-				echo "		".$text['label-'.$row['default_setting_value']]."\n";
-			}
-			else if ($row['default_setting_value'] == 'true' || $row['default_setting_value'] == 'false') {
 				echo "		".$text['label-'.$row['default_setting_value']]."\n";
 			}
 			else {

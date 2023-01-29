@@ -17,7 +17,7 @@
 
 	The Initial Developer of the Original Code is
 	Mark J Crane <markjcrane@fusionpbx.com>
-	Portions created by the Initial Developer are Copyright (C) 2008-2023
+	Portions created by the Initial Developer are Copyright (C) 2008-2021
 	the Initial Developer. All Rights Reserved.
 
 	Contributor(s):
@@ -122,7 +122,6 @@
 					$_SESSION["domain_uuid"] = $result["domain_uuid"];
 					//$_SESSION["domain_name"] = $result["domain_name"];
 					$_SESSION["user_uuid"] = $result["user_uuid"];
-					$_SESSION["context"] = $result['domain_name'];
 
 				//user session array
 					$_SESSION["user"]["domain_uuid"] = $result["domain_uuid"];
@@ -308,8 +307,8 @@
 					}
 					header("Location: ".$redirect_path);
 				}
-				elseif (isset($_SESSION['login']['destination']['text'])) {
-					header("Location: ".$_SESSION['login']['destination']['text']);
+				elseif (isset($_SESSION['login']['destination']['url'])) {
+					header("Location: ".$_SESSION['login']['destination']['url']);
 				} elseif (file_exists($_SERVER["PROJECT_ROOT"]."/core/dashboard/app_config.php")) {
 					header("Location: ".PROJECT_PATH."/core/dashboard/");
 				}

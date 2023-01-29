@@ -22,22 +22,14 @@
 
 */
 
-//set the include path
-	$conf = glob("{/usr/local/etc,/etc}/fusionpbx/config.conf", GLOB_BRACE);
-	set_include_path(parse_ini_file($conf[0])['document.root']);
-
-//includes files
+//includes
+	require_once "root.php";
 	require_once "resources/require.php";
 	require_once "resources/check_auth.php";
 
 //add multi-lingual support
 	$language = new text;
 	$text = $language->get($_SESSION['domain']['language']['code'], 'app/devices');
-
-//connect to the database
-	if (!isset($database)) {
-		$database = new database;
-	}
 
 //get the vendor functions
 	$sql = "select v.name as vendor_name, f.name, f.value ";
@@ -62,6 +54,7 @@
 	$sql .= "and v.enabled = 'true' ";
 	$sql .= "and f.enabled = 'true' ";
 	$sql .= "order by v.name asc, f.name asc ";
+	$database = new database;
 	$vendor_functions = $database->select($sql, (is_array($parameters) ? $parameters : null), 'all');
 	unset($sql, $sql_where_or, $parameters);
 
@@ -83,6 +76,7 @@
 					$sql = "select device_uuid, device_profile_uuid from v_devices ";
 					$sql .= "where device_user_uuid = :device_user_uuid ";
 					$parameters['device_user_uuid'] = $_SESSION['user_uuid'];
+					$database = new database;
 					$row = $database->select($sql, $parameters, 'row');
 					if (is_array($row) && @sizeof($row) != 0) {
 						$device_uuid = $row['device_uuid'];
@@ -95,6 +89,7 @@
 						$sql = "select * from v_device_keys ";
 						$sql .= "where device_profile_uuid = :device_profile_uuid ";
 						$parameters['device_profile_uuid'] = $device_profile_uuid;
+						$database = new database;
 						$device_profile_keys = $database->select($sql, $parameters, 'all');
 						unset($sql, $parameters);
 					}
@@ -104,6 +99,7 @@
 						$sql = "select * from v_device_keys ";
 						$sql .= "where device_uuid = :device_uuid ";
 						$parameters['device_uuid'] = $device_uuid;
+						$database = new database;
 						$device_keys = $database->select($sql, $parameters, 'all');
 						unset($sql, $parameters);
 					}
@@ -220,6 +216,7 @@
 												$sql = "select device_uuid from v_devices ";
 												$sql .= "where device_user_uuid = :device_user_uuid ";
 												$parameters['device_user_uuid'] = $_SESSION['user_uuid'];
+												$database = new database;
 												$device_uuid = $database->select($sql, $parameters, 'column');
 												unset($sql, $parameters);
 											}
@@ -268,6 +265,7 @@
 										$p->add('device_key_edit', 'temp');
 
 									//save the changes
+										$database = new database;
 										$database->app_name = 'devices';
 										$database->app_uuid = '4efa1a1a-32e7-bf83-534b-6c8299958a8e';
 										$database->save($array);
@@ -304,6 +302,7 @@
 	$sql = "select device_uuid, device_profile_uuid from v_devices ";
 	$sql .= "where device_user_uuid = :device_user_uuid ";
 	$parameters['device_user_uuid'] = $_SESSION['user_uuid'];
+	$database = new database;
 	$row = $database->select($sql, $parameters, 'row');
 	if (is_array($row) && @sizeof($row) != 0) {
 		$device_uuid = $row['device_uuid'];
@@ -316,6 +315,7 @@
 		$sql = "select * from v_device_lines ";
 		$sql .= "where device_uuid = :device_uuid ";
 		$parameters['device_uuid'] = $device_uuid;
+		$database = new database;
 		$device_lines = $database->select($sql, $parameters, 'all');
 		unset($sql, $parameters);
 	}
@@ -355,6 +355,7 @@
 		if (is_uuid($device_profile_uuid)) {
 			$parameters['device_profile_uuid'] = $device_profile_uuid;
 		}
+		$database = new database;
 		$keys = $database->select($sql, $parameters, 'all');
 		unset($sql, $parameters);
 	}

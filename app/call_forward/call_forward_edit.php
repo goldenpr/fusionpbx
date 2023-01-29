@@ -17,7 +17,7 @@
 
 	The Initial Developer of the Original Code is
 	Mark J Crane <markjcrane@fusionpbx.com>
-	Portions created by the Initial Developer are Copyright (C) 2008-2022
+	Portions created by the Initial Developer are Copyright (C) 2008-2021
 	the Initial Developer. All Rights Reserved.
 
 	Contributor(s):
@@ -25,11 +25,8 @@
 	Luis Daniel Lucio Quiroz <dlucio@okay.com.mx>
 */
 
-//set the include path
-	$conf = glob("{/usr/local/etc,/etc}/fusionpbx/config.conf", GLOB_BRACE);
-	set_include_path(parse_ini_file($conf[0])['document.root']);
-
-//includes files
+//includes
+	require_once "root.php";
 	require_once "resources/require.php";
 	require_once "resources/check_auth.php";
 
@@ -156,7 +153,7 @@
 
 		//check for all required data
 			if (strlen($msg) > 0 && strlen($_POST["persistformvar"]) == 0) {
-				$document['title'] = $text['title-call_forward'];
+				$document['title'] = $text['title-call_routing'];
 				require_once "resources/header.php";
 				require_once "resources/persist_form_var.php";
 				echo "<div align='center'>\n";
@@ -262,7 +259,7 @@
 
 		//save the data
 			$database = new database;
-			$database->app_name = 'call_forward';
+			$database->app_name = 'call_routing';
 			$database->app_uuid = '19806921-e8ed-dcff-b325-dd3e5da4959d';
 			$database->save($array);
 			unset($array);
@@ -277,7 +274,7 @@
 					$array['follow_me_destinations'][]['follow_me_destination_uuid'] = $follow_me_delete_uuid;
 				}
 				$database = new database;
-				$database->app_name = 'call_forward';
+				$database->app_name = 'call_routing';
 				$database->app_uuid = '19806921-e8ed-dcff-b325-dd3e5da4959d';
 				$database->delete($array);
 				unset($array);
@@ -386,53 +383,6 @@
 				unset($feature_event_notify);
 			}
 
-		//send presence event
-			if (permission_exists('do_not_disturb')) {
-				if ($dnd_enabled == 'true') {
-					//build the event
-					$cmd = "sendevent PRESENCE_IN\n";
-					$cmd .= "proto: sip\n";
-					$cmd .= "login: ".$extension."@".$_SESSION['domain_name']."\n";
-					$cmd .= "from: ".$extension."@".$_SESSION['domain_name']."\n";
-					$cmd .= "status: Active (1 waiting)\n";
-					$cmd .= "rpid: unknown\n";
-					$cmd .= "event_type: presence\n";
-					$cmd .= "alt_event_type: dialog\n";
-					$cmd .= "event_count: 1\n";
-					$cmd .= "unique-id: ".uuid()."\n";
-					$cmd .= "Presence-Call-Direction: outbound\n";
-					$cmd .= "answer-state: confirmed\n";
-
-					//send the event
-					$fp = event_socket_create($_SESSION['event_socket_ip_address'], $_SESSION['event_socket_port'], $_SESSION['event_socket_password']);
-					$switch_result = event_socket_request($fp, $cmd);
-					unset($fp);
-				}
-				else {
-					$presence = new presence;
-					if (!$presence->active($extension."@".$_SESSION['domain_name'])) {
-						//build the event
-						$cmd = "sendevent PRESENCE_IN\n";
-						$cmd .= "proto: sip\n";
-						$cmd .= "login: ".$extension."@".$_SESSION['domain_name']."\n";
-						$cmd .= "from: ".$extension."@".$_SESSION['domain_name']."\n";
-						$cmd .= "status: Active (1 waiting)\n";
-						$cmd .= "rpid: unknown\n";
-						$cmd .= "event_type: presence\n";
-						$cmd .= "alt_event_type: dialog\n";
-						$cmd .= "event_count: 1\n";
-						$cmd .= "unique-id: ".uuid()."\n";
-						$cmd .= "Presence-Call-Direction: outbound\n";
-						$cmd .= "answer-state: terminated\n";
-
-						//send the event
-						$fp = event_socket_create($_SESSION['event_socket_ip_address'], $_SESSION['event_socket_port'], $_SESSION['event_socket_password']);
-						$switch_result = event_socket_request($fp, $cmd);
-						unset($fp);
-					}
-				}
-			}
-
 		//synchronize configuration
 			if (is_readable($_SESSION['switch']['extensions']['dir'])) {
 				require_once "app/extensions/resources/classes/extension.php";
@@ -453,7 +403,7 @@
 	}
 
 //show the header
-	$document['title'] = $text['title-call_forward'];
+	$document['title'] = $text['title-call_routing'];
 	require_once "resources/header.php";
 
 //pre-populate the form

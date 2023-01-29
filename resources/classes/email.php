@@ -265,7 +265,7 @@ if (!class_exists('email')) {
 						//add the attachments to the array
 						$array['email_queue_attachments'][$y]['email_queue_attachment_uuid'] = uuid();
 						$array['email_queue_attachments'][$y]['email_queue_uuid'] = $email_queue_uuid;
-						$array['email_queue_attachments'][$y]['domain_uuid'] = $this->domain_uuid;
+						$array['email_queue_attachments'][$y]['domain_uuid'] = $_SESSION['domain_uuid'];
 						$array['email_queue_attachments'][$y]['email_attachment_type'] = $attachment['type'];
 						$array['email_queue_attachments'][$y]['email_attachment_name'] = $attachment['name'];
 						if (strlen($attachment['value']) < 255 && file_exists($attachment['value'])) {
@@ -366,93 +366,42 @@ if (!class_exists('email')) {
 					include_once("resources/phpmailer/class.phpmailer.php");
 					include_once("resources/phpmailer/class.smtp.php");
 
-					//use the session email default settings
-					if ($_SESSION['email']['smtp_hostname']['text'] != '') { 
-						$smtp['hostname'] = $_SESSION['email']['smtp_hostname']['text'];
-					}
-					$smtp['host'] 		= (strlen($_SESSION['email']['smtp_host']['text']) ? $_SESSION['email']['smtp_host']['text']: '127.0.0.1');
-					if (isset($_SESSION['email']['smtp_port'])) {
-						$smtp['port'] = (int) $_SESSION['email']['smtp_port']['numeric'];
-					}
-					else {
-						$smtp['port'] = 0;
-					}
-					$smtp['secure'] 	= $_SESSION['email']['smtp_secure']['text'];
-					$smtp['auth'] 		= $_SESSION['email']['smtp_auth']['text'];
-					$smtp['username'] 	= $_SESSION['email']['smtp_username']['text'];
-					$smtp['password'] 	= $_SESSION['email']['smtp_password']['text'];
-					$smtp['from'] 		= $_SESSION['email']['smtp_from']['text'];
-					$smtp['from_name'] 	= $_SESSION['email']['smtp_from_name']['text'];
-					$smtp['validate_certificate'] = $_SESSION['email']['smtp_validate_certificate']['boolean'];
-					$smtp['crypto_method'] = $_SESSION['email']['smtp_crypto_method']['text'];
-
-					if (isset($_SESSION['voicemail']['smtp_from']) && strlen($_SESSION['voicemail']['smtp_from']['text']) > 0) {
-						$smtp['from'] = $_SESSION['voicemail']['smtp_from']['text'];
-					}
-					if (isset($_SESSION['voicemail']['smtp_from_name']) && strlen($_SESSION['voicemail']['smtp_from_name']['text']) > 0) {
-						$smtp['from_name'] = $_SESSION['voicemail']['smtp_from_name']['text'];
-					}
-
-					//override the domain-specific smtp server settings, if any
-					$sql = "select domain_setting_subcategory, domain_setting_value ";
-					$sql .= "from v_domain_settings ";
-					$sql .= "where domain_uuid = :domain_uuid ";
-					$sql .= "and (domain_setting_category = 'email' or domain_setting_category = 'voicemail') ";
-					$sql .= "and domain_setting_enabled = 'true' ";
-					$parameters['domain_uuid'] = $this->domain_uuid;
-					$database = new database;
-					$result = $database->select($sql, $parameters, 'all');
-					if (is_array($result) && @sizeof($result) != 0) {
-						foreach ($result as $row) {
-							if ($row['domain_setting_value'] != '') {
-								$smtp[str_replace('smtp_','',$row["domain_setting_subcategory"])] = $row['domain_setting_value'];
-							}
-						}
-					}
-					unset($sql, $parameters, $result, $row);
-
-					//value adjustments
-					$smtp['auth']		= ($smtp['auth'] == "true") ? true : false;
-					$smtp['password']	= ($smtp['password'] != '') ? $smtp['password'] : null;
-					$smtp['secure']		= ($smtp['secure'] != "none") ? $smtp['secure'] : null;
-					$smtp['username']	= ($smtp['username'] != '') ? $smtp['username'] : null;
-
 					//create the email object and set general settings
 					$mail = new PHPMailer();
 					$mail->IsSMTP();
-					if ($smtp['hostname'] != '') {
-						$mail->Hostname = $smtp['hostname'];
+					if ($_SESSION['email']['smtp_hostname']['text'] != '') {
+						$mail->Hostname = $_SESSION['email']['smtp_hostname']['text'];
 					}
-					$mail->Host = $smtp['host'];
-					if (is_numeric($smtp['port'])) {
-						$mail->Port = $smtp['port'];
+					$mail->Host = $_SESSION['email']['smtp_host']['text'];
+					if (is_numeric($_SESSION['email']['smtp_port']['numeric'])) {
+						$mail->Port = $_SESSION['email']['smtp_port']['numeric'];
 					}
 
-					if ($smtp['auth'] == "true") {
+					if ($_SESSION['email']['smtp_auth']['text'] == "true") {
 						$mail->SMTPAuth = true;
-						$mail->Username = $smtp['username'];
-						$mail->Password = $smtp['password'];
+						$mail->Username = $_SESSION['email']['smtp_username']['text'];
+						$mail->Password = $_SESSION['email']['smtp_password']['text'];
 					}
 					else {
 						$mail->SMTPAuth = false;
 					}
 
 					$smtp_secure = true;
-					if ($smtp['secure']  == "") {
+					if ($_SESSION['email']['smtp_secure']['text'] == "") {
 						$mail->SMTPSecure = 'none';
 						$mail->SMTPAutoTLS = false;
 						$smtp_secure = false;
 					}
-					elseif ($smtp['secure']  == "none") {
+					elseif ($_SESSION['email']['smtp_secure']['text'] == "none") {
 						$mail->SMTPSecure = 'none';
 						$mail->SMTPAutoTLS = false;
 						$smtp_secure = false;
 					}
 					else {
-						$mail->SMTPSecure = $smtp['secure'];
+						$mail->SMTPSecure = $_SESSION['email']['smtp_secure']['text'];
 					}
 
-					if ($smtp_secure && isset($smtp['validate_certificate']) && $smtp['validate_certificate'] == "false") {
+					if ($smtp_secure && isset($_SESSION['email']['smtp_validate_certificate']) && $_SESSION['email']['smtp_validate_certificate']['boolean'] == "false") {
 						//bypass certificate check e.g. for self-signed certificates
 						$smtp_options['ssl']['verify_peer'] = false;
 						$smtp_options['ssl']['verify_peer_name'] = false;
@@ -460,8 +409,8 @@ if (!class_exists('email')) {
 					}
 
 					//used to set the SSL version
-					if ($smtp_secure && isset($smtp['crypto_method'])) {
-						$smtp_options['ssl']['crypto_method'] = $smtp['crypto_method'];
+					if ($smtp_secure && isset($_SESSION['email']['smtp_crypto_method'])) {
+						$smtp_options['ssl']['crypto_method'] = $_SESSION['email']['smtp_crypto_method']['text'];
 					}
 
 					//add SMTP Options if the array exists
@@ -469,8 +418,8 @@ if (!class_exists('email')) {
 						$mail->SMTPOptions = $smtp_options;
 					}
 
-					$this->from_address = ($this->from_address != '') ? $this->from_address : $smtp['from'];
-					$this->from_name = ($this->from_name != '') ? $this->from_name : $smtp['from_name'];
+					$this->from_address = ($this->from_address != '') ? $this->from_address : $_SESSION['email']['smtp_from']['text'];
+					$this->from_name = ($this->from_name != '') ? $this->from_name : $_SESSION['email']['smtp_from_name']['text'];
 					$mail->SetFrom($this->from_address, $this->from_name);
 					$mail->AddReplyTo($this->from_address, $this->from_name);
 					$mail->Subject = $this->subject;
@@ -484,8 +433,6 @@ if (!class_exists('email')) {
 					if (is_numeric($this->debug_level) && $this->debug_level > 0) {
 						$mail->SMTPDebug = $this->debug_level;
 					}
-					$mail->Timeout       =   20; //set the timeout (seconds)
-    					$mail->SMTPKeepAlive = true; //don't close the connection between messages
 
 					//add the email recipients
 					$address_found = false;

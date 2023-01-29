@@ -21,11 +21,8 @@
 	the Initial Developer. All Rights Reserved.
 */
 
-//set the include path
-	$conf = glob("{/usr/local/etc,/etc}/fusionpbx/config.conf", GLOB_BRACE);
-	set_include_path(parse_ini_file($conf[0])['document.root']);
-
-//includes files;
+//includes
+	require_once "root.php";
 	require_once "resources/require.php";
 	require_once "resources/check_auth.php";
 	require_once "resources/paging.php";
@@ -118,9 +115,6 @@
 	$sql .= "from v_sofia_global_settings ";
 	if (isset($_GET["search"])) {
 		$sql .= "where (";
-		$sql .= "	global_setting_name like :search ";
-		$sql .= "	or global_setting_value like :search ";
-		$sql .= "	or global_setting_description like :search ";
 		$sql .= ") ";
 		$parameters['search'] = '%'.$search.'%';
 	}

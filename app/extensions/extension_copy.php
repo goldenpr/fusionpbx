@@ -24,11 +24,8 @@
 	Mark J Crane <markjcrane@fusionpbx.com>
 */
 
-//set the include path
-	$conf = glob("{/usr/local/etc,/etc}/fusionpbx/config.conf", GLOB_BRACE);
-	set_include_path(parse_ini_file($conf[0])['document.root']);
-
-//includes files
+//includes
+	include "root.php";
 	require_once "resources/require.php";
 	require_once "resources/check_auth.php";
 	require_once "resources/paging.php";
@@ -104,8 +101,6 @@
 		$dial_string = $row["dial_string"];
 		$enabled = $row["enabled"];
 		$description = $row["description"].' ('.$text['button-copy'].')';
-		$w_username = $row["w_username"];
-		$w_password = $row["w_password"];
 	}
 	unset($sql, $parameters, $row);
 
@@ -144,8 +139,6 @@
 	$array['extensions'][0]['dial_string'] = $dial_string;
 	$array['extensions'][0]['enabled'] = $enabled;
 	$array['extensions'][0]['description'] = $description;
-	$array['extensions'][0]['w_username'] = $w_username;
-	$array['extensions'][0]['w_password'] = $w_password;
 	$database = new database;
 	$database->save($array);
 	$message = $database->message;

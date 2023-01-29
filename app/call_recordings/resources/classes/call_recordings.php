@@ -70,7 +70,7 @@ if (!class_exists('call_recordings')) {
 									if ($record['checked'] == 'true' && is_uuid($record['uuid'])) {
 										//get the information to delete
 											$sql = "select call_recording_name, call_recording_path ";
-											$sql .= "from view_call_recordings ";
+											$sql .= "from v_call_recordings ";
 											$sql .= "where call_recording_uuid = :call_recording_uuid ";
 											$parameters['call_recording_uuid'] = $record['uuid'];
 											$database = new database;
@@ -81,10 +81,7 @@ if (!class_exists('call_recordings')) {
 														unlink($field['call_recording_path'].'/'.$field['call_recording_name']);
 													}
 												//build call recording delete array
-													$array['xml_cdr'][$x]['xml_cdr_uuid'] = $record['uuid'];
-													$array['xml_cdr'][$x]['record_path'] = null;
-													$array['xml_cdr'][$x]['record_name'] = null;
-													$array['xml_cdr'][$x]['record_length'] = null;
+													$array[$this->table][$x][$this->name.'_uuid'] = $record['uuid'];
 												//increment the id
 													$x++;
 											}
@@ -94,25 +91,15 @@ if (!class_exists('call_recordings')) {
 
 						//delete the checked rows
 							if (is_array($array) && @sizeof($array) != 0) {
-
-								//add temporary permissions
-									$p = new permissions;
-									$p->add('xml_cdr_edit', 'temp');
-
-								//remove record_path, record_name and record_length
+								//execute delete
 									$database = new database;
-									$database->app_name = 'xml_cdr';
-									$database->app_uuid = '4a085c51-7635-ff03-f67b-86e834422848';
-									$database->save($array, false);
-									$message = $database->message;
+									$database->app_name = $this->app_name;
+									$database->app_uuid = $this->app_uuid;
+									$database->delete($array);
 									unset($array);
-
-								//remove the temporary permissions
-									$p->delete('xml_cdr_edit', 'temp');
 
 								//set message
 									message::add($text['message-delete']);
-
 							}
 							unset($records);
 					}
@@ -127,11 +114,8 @@ if (!class_exists('call_recordings')) {
 
 				//get call recording from database
 					if (is_uuid($this->recording_uuid)) {
-						$sql = "select call_recording_name, call_recording_path ";
-						if ($_SESSION['call_recordings']['storage_type']['text'] == 'base64' && $row['call_recording_base64'] != '') {
-							$sql = ", call_recording_base64 ";
-						}
-						$sql .= "from view_call_recordings ";
+						$sql = "select call_recording_name, call_recording_path, call_recording_base64 ";
+						$sql .= "from v_call_recordings ";
 						$sql .= "where call_recording_uuid = :call_recording_uuid ";
 						$parameters['call_recording_uuid'] = $this->recording_uuid;
 						$database = new database;

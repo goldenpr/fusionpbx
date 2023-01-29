@@ -29,7 +29,7 @@
 --	Luis Daniel Lucio Quiroz <dlucio@okay.com.mx>
 
 --set the default
-	continue = true;
+continue = true;
 
 --get the action
 	action = params:getHeader("action");
@@ -83,11 +83,6 @@
 		--   true - send call to FS where ext reged
 		--   false - send call directly to ext
 			local USE_FS_PATH = xml_handler and xml_handler["fs_path"]
-			if (USE_FS_PATH == 'true') then
-				USE_FS_PATH = true;
-			else
-				USE_FS_PATH = false;
-			end
 
 		-- Make sance only for extensions with number_alias
 		--  false - you should register with AuthID=UserID=Extension (default)
@@ -208,11 +203,6 @@
 							end
 					end
 
-				--get the dial_string from default settings
-					local Settings = require "resources.functions.lazy_settings"
-					local settings = Settings.new(dbh, domain_name, domain_uuid);
-					dial_string = settings:get('domain', 'dial_string', 'text');
- 
 				--prevent processing for invalid domains
 					if (domain_uuid == nil) then
 						continue = false;
@@ -259,7 +249,7 @@
 								if (database["type"] == "mysql") then
 									params.now = os.time();
 									sql = sql .. "AND expires > :now ";
-								elseif (database["type"] == "pgsql") then
+								else
 									sql = sql .. "AND to_timestamp(expires) > NOW()";
 								end
 								if (debug["sql"]) then
@@ -272,7 +262,7 @@
 								--freeswitch.consoleLog("notice", "[xml_handler][directory] database_hostname is " .. database_hostname .. "\n");
 
 							--hostname was not found set USE_FS_PATH to false to prevent a database_hostname concatenation error
-								if (database_hostname == nil and USE_FS_PATH) then
+								if (database_hostname == nil) then
 									USE_FS_PATH = false;
 								end
 
@@ -378,6 +368,20 @@
 									end
 								end
 
+							-- check matching UserID and AuthName
+								if sip_auth_method then
+									local check_from_number = METHODS[sip_auth_method] or METHODS._ANY_
+									if DIAL_STRING_BASED_ON_USERID then
+										continue = (sip_from_user == user) and ((not check_from_number) or (from_user == sip_from_number))
+									else
+										continue = (sip_from_user == user) and ((not check_from_number) or (from_user == user))
+									end
+									if not continue then
+										XML_STRING = nil;
+										return 1;
+									end
+								end
+
 							--set the presence_id
 								presence_id = (NUMBER_AS_PRESENCE_ID and sip_from_number or sip_from_user) .. "@" .. domain_name;
 
@@ -387,11 +391,10 @@
 								elseif (string.len(row.dial_string) > 0) then
 									dial_string = row.dial_string;
 								else
-									--set the destintion
 										local destination = (DIAL_STRING_BASED_ON_USERID and sip_from_number or sip_from_user) .. "@" .. domain_name;
 									--set a default dial string
 										if (dial_string == null) then
-											dial_string = "{sip_invite_domain=" .. domain_name .. ",presence_id=" .. presence_id .. "}${sofia_contact(*/" .. destination .. ")}";
+											dial_string = "{sip_invite_domain=" .. domain_name .. ",presence_id=" .. presence_id .. "}${sofia_contact(" .. destination .. ")}";
 										end
 									--set the an alternative dial string if the hostnames don't match
 										if (USE_FS_PATH) then
@@ -470,7 +473,7 @@
 								vm_mailto = "";
 							end
 						end);
-				end
+					end
 
 				--if the extension does not exist set continue to false;
 					if (extension_uuid == nil) then
@@ -504,7 +507,7 @@
 							table.insert(xml, [[					<users>]]);
 							if (number_alias) then
 								if (cidr) then
-									table.insert(xml, [[						<user id="]] .. extension .. [["]] .. cidr .. number_alias_string .. [[>]]);
+									table.insert(xml, [[						<user id="]] .. extension .. [["]] .. cidr .. number_alias_string .. [[ type=>]]);
 								else
 									table.insert(xml, [[						<user id="]] .. extension .. [["]] .. number_alias_string .. [[>]]);
 								end
@@ -676,7 +679,7 @@
 							end
 							table.insert(xml, [[								<variable name="record_stereo" value="true"/>]]);
 							table.insert(xml, [[								<variable name="transfer_fallback_extension" value="operator"/>]]);
-							table.insert(xml, [[								<variable name="export_vars" value="domain_name,domain_uuid"/>]]);
+							table.insert(xml, [[								<variable name="export_vars" value="domain_name"/>]]);
 							for key,row in pairs(extension_settings) do
 								if (row.extension_setting_type == 'variable') then
 									table.insert(xml, [[								<variable name="]]..row.extension_setting_name..[[" value="]]..row.extension_setting_value..[["/>]]);
@@ -730,6 +733,25 @@
 								freeswitch.consoleLog("notice", "[xml_handler] directory:" .. user .. "@" .. domain_name .. " source: database\n");
 							end
 					end
+			end
+
+			if XML_STRING and (not loaded_from_db) and sip_auth_method then
+				local user_id = api:execute("user_data", from_user .. "@" .. domain_name .." attr id")
+				if user_id ~= user then
+					XML_STRING = nil;
+				elseif METHODS[sip_auth_method] or METHODS._ANY_ then
+					local alias
+					if DIAL_STRING_BASED_ON_USERID then
+						alias = api:execute("user_data", from_user .. "@" .. domain_name .." attr number-alias")
+					end
+					if alias and #alias > 0 then
+						if from_user ~= alias then
+							XML_STRING = nil
+						end
+					elseif from_user ~= user_id then
+						XML_STRING = nil;
+					end
+				end
 			end
 
 		--get the XML string from the cache

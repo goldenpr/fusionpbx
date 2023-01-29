@@ -26,11 +26,8 @@
 	Luis Daniel Lucio Quiroz <dlucio@okay.com.mx>
 */
 
-//set the include path
-	$conf = glob("{/usr/local/etc,/etc}/fusionpbx/config.conf", GLOB_BRACE);
-	set_include_path(parse_ini_file($conf[0])['document.root']);
-
-//includes files
+//includes
+	require_once "root.php";
 	require_once "resources/require.php";
 	require_once "resources/check_auth.php";
 	require_once "resources/classes/ringbacks.php";
@@ -378,7 +375,6 @@
 					$array['ring_groups'][0]["ring_group_destinations"][$y]["destination_delay"] = $row['destination_delay'];
 					$array['ring_groups'][0]["ring_group_destinations"][$y]["destination_timeout"] = $row['destination_timeout'];
 					$array['ring_groups'][0]["ring_group_destinations"][$y]["destination_prompt"] = $row['destination_prompt'];
-					$array['ring_groups'][0]["ring_group_destinations"][$y]["destination_enabled"] = $row['destination_enabled'] ?: 'false';
 					$array['ring_groups'][0]["ring_group_destinations"][$y]["domain_uuid"] = $domain_uuid;
 				}
 				$y++;
@@ -755,7 +751,6 @@
 	if (permission_exists('ring_group_prompt')) {
 		echo "				<td class='vtable'>".$text['label-destination_prompt']."</td>\n";
 	}
-	echo "					<td class='vtable'>".$text['label-destination_enabled']."</td>\n";
 	if ($show_destination_delete && permission_exists('ring_group_destination_delete')) {
 		echo "					<td class='vtable edit_delete_checkbox_all' onmouseover=\"swap_display('delete_label_destinations', 'delete_toggle_destinations');\" onmouseout=\"swap_display('delete_label_destinations', 'delete_toggle_destinations');\">\n";
 		echo "						<span id='delete_label_destinations'>".$text['label-delete']."</span>\n";
@@ -774,15 +769,7 @@
 
 		echo "			<tr>\n";
 		echo "				<td class='formfld'>\n";
-		if (!is_uuid($row['ring_group_destination_uuid'])) { // new record
-			if (substr($_SESSION['theme']['input_toggle_style']['text'], 0, 6) == 'switch') {
-				$onkeyup = "onkeyup=\"document.getElementById('ring_group_destinations_".$x."_destination_enabled').checked = (this.value != '' ? true : false);\""; // switch
-			}
-			else {
-				$onkeyup = "onkeyup=\"document.getElementById('ring_group_destinations_".$x."_destination_enabled').value = (this.value != '' ? true : false);\""; // select
-			}
-		}
-		echo "					<input type=\"text\" name=\"ring_group_destinations[".$x."][destination_number]\" class=\"formfld\" value=\"".escape($row['destination_number'])."\" ".$onkeyup.">\n";
+		echo "					<input type=\"text\" name=\"ring_group_destinations[".$x."][destination_number]\" class=\"formfld\" value=\"".escape($row['destination_number'])."\">\n";
 		echo "				</td>\n";
 		echo "				<td class='formfld'>\n";
 		echo "					<select name='ring_group_destinations[".$x."][destination_delay]' class='formfld' style='width:55px'>\n";
@@ -813,6 +800,7 @@
 		}
 		echo "					</select>\n";
 		echo "				</td>\n";
+
 		if (permission_exists('ring_group_prompt')) {
 			echo "			<td class='formfld'>\n";
 			echo "				<select class='formfld' style='width: 90px;' name='ring_group_destinations[".$x."][destination_prompt]'>\n";
@@ -822,22 +810,6 @@
 			echo "				</select>\n";
 			echo "			</td>\n";
 		}
-		echo "				<td class='formfld'>\n";
-		// switch
-		if (substr($_SESSION['theme']['input_toggle_style']['text'], 0, 6) == 'switch') {
-			echo "				<label class='switch'>\n";
-			echo "					<input type='checkbox' id='ring_group_destinations_".$x."_destination_enabled' name='ring_group_destinations[".$x."][destination_enabled]' value='true' ".($row['destination_enabled'] == 'true' ? "checked='checked'" : null).">\n";
-			echo "					<span class='slider'></span>\n";
-			echo "				</label>\n";
-		}
-		// select
-		else {
-			echo "				<select class='formfld' id='ring_group_destinations_".$x."_destination_enabled' name='ring_group_destinations[".$x."][destination_enabled]'>\n";
-			echo "					<option value='false'>".$text['option-false']."</option>\n";
-			echo "					<option value='true' ".($row['destination_enabled'] == 'true' ? "selected='selected'" : null).">".$text['option-true']."</option>\n";
-			echo "				</select>\n";
-		}
-		echo "				</td>\n";
 		if ($show_destination_delete && permission_exists('ring_group_destination_delete')) {
 			if (is_uuid($row['ring_group_destination_uuid'])) {
 				echo "			<td class='vtable' style='text-align: center; padding-bottom: 3px;'>";

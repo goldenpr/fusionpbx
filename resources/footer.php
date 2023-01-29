@@ -17,18 +17,15 @@
 
 	The Initial Developer of the Original Code is
 	Mark J Crane <markjcrane@fusionpbx.com>
-	Portions created by the Initial Developer are Copyright (C) 2008-2022
+	Portions created by the Initial Developer are Copyright (C) 2008-2020
 	the Initial Developer. All Rights Reserved.
 
 	Contributor(s):
 	Mark J Crane <markjcrane@fusionpbx.com>
 */
 
-//set the include path
-	$conf = glob("{/usr/local/etc,/etc}/fusionpbx/config.conf", GLOB_BRACE);
-	set_include_path(parse_ini_file($conf[0])['document.root']);
-
-//includes files
+//includes
+	require_once "root.php";
 	require_once "resources/require.php";
 
 //set variables if not set
@@ -84,10 +81,6 @@
 	$text_application = $language->get(null,'themes/'.$_SESSION['domain']['template']['name']);
 	$text = array_merge($text_default, $text_application);
 
-//create token
-	$object = new token;
-	$domain_json_token = $object->create('/core/domains/domain_json.php');
-
 //set template variables
 
 	//add translations
@@ -99,9 +92,6 @@
 		$view->assign('project_path', PROJECT_PATH);
 	//domain menu
 		$view->assign('domain_menu', escape($_SESSION['domain']['menu']['uuid']));
-	//domain json token
-		$view->assign('domain_json_token_name', $domain_json_token['name']);
-		$view->assign('domain_json_token_hash', $domain_json_token['hash']);
 	//theme settings
 		if (is_array($_SESSION['theme']) && @sizeof($_SESSION['theme']) != 0) {
 			//load into array
@@ -151,7 +141,7 @@
 				$settings['theme']['menu_side_toggle_hover_delay_contract'] = is_numeric($settings['theme']['menu_side_toggle_hover_delay_contract']) ? $settings['theme']['menu_side_toggle_hover_delay_contract'] : '1000';
 				$settings['theme']['menu_style'] = $settings['theme']['menu_style'] != '' ? $settings['theme']['menu_style'] : 'fixed';
 				$settings['theme']['menu_position'] = $settings['theme']['menu_position'] != '' ? $settings['theme']['menu_position'] : 'top';
-				$settings['theme']['footer'] = $settings['theme']['footer'] != '' ? $settings['theme']['footer'] : '&copy; '.$text['theme-label-copyright'].' 2008 - '.date('Y')." <a href='http://www.fusionpbx.com' class='footer' target='_blank'>fusionpbx.com</a> ".$text['theme-label-all_rights_reserved'];
+				$settings['theme']['footer'] = $settings['theme']['footer'] != '' ? $settings['theme']['footer'] : '&copy; '.$text['theme-label-copyright'].' 2008 - '.date('Y')." <a href='http://www.globalcloud.me' class='footer' target='_blank'>GlobalCloud.me</a> ".$text['theme-label-all_rights_reserved'];
 			$view->assign('settings', $settings);
 		}
 	//document title

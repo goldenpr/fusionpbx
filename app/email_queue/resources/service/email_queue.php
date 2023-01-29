@@ -1,19 +1,20 @@
 <?php
 
-//add the document root to the include path
+//check the permission
 	if (defined('STDIN')) {
-		$config_glob = glob("{/usr/local/etc,/etc}/fusionpbx/config.conf", GLOB_BRACE);
-		$conf = parse_ini_file($config_glob[0]);
-		set_include_path($conf['document.root']);
+		$document_root = str_replace("\\", "/", $_SERVER["PHP_SELF"]);
+		preg_match("/^(.*)\/app\/.*$/", $document_root, $matches);
+		$document_root = $matches[1];
+		set_include_path($document_root);
+		$_SERVER["DOCUMENT_ROOT"] = $document_root;
+		require_once "resources/require.php";
 	}
 	else {
 		exit;
+		include "root.php";
+		require_once "resources/require.php";
+		require_once "resources/pdo.php";
 	}
-
-//include files
-	require_once "resources/require.php";
-	include "resources/classes/permissions.php";
-	require "app/email_queue/resources/functions/transcribe.php";
 
 //increase limits
 	set_time_limit(0);
@@ -35,10 +36,11 @@
 		$debug = $_GET['debug'];
 	}
 
-//get the hostname
-	if (!isset($hostname)) {
-		$hostname = gethostname();
-	}
+//includes
+	if (!defined('STDIN')) { include_once "root.php"; }
+	require_once "resources/require.php";
+	include "resources/classes/permissions.php";
+	require $document_root."/app/email_queue/resources/functions/transcribe.php";
 
 //define the process id file
 	$pid_file = "/var/run/fusionpbx/".basename( $argv[0], ".php") .".pid";
@@ -53,25 +55,13 @@
 		//check to see if the process is running
 		if (file_exists($file)) {
 			$pid = file_get_contents($file);
-			if (function_exists('posix_getsid')) {
-				if (posix_getsid($pid) === false) { 
-					//process is not running
-					$exists = false;
-				}
-				else {
-					//process is running
-					$exists = true;
-				}
+			if (posix_getsid($pid) === false) { 
+				//process is not running
+				$exists = false;
 			}
 			else {
-				if (file_exists('/proc/'.$pid)) {
-					//process is running
-					$exists = true;
-				}
-				else {
-					//process is not running
-					$exists = false;
-				}
+				//process is running
+				$exists = true;
 			}
 		}
 
@@ -143,7 +133,12 @@
 		$sql .= "and hostname = :hostname ";
 		$sql .= "order by domain_uuid asc ";
 		$sql .= "limit :limit ";
-		$parameters['hostname'] = $hostname;
+		if (isset($hostname)) {
+			$parameters['hostname'] = $hostname;
+		}
+		else {
+			$parameters['hostname'] = gethostname();
+		}
 		$parameters['limit'] = $email_queue_limit;
 		$database = new database;
 		$email_queue = $database->select($sql, $parameters, 'all');
@@ -152,7 +147,7 @@
 		//process the messages
 		if (is_array($email_queue) && @sizeof($email_queue) != 0) {
 			foreach($email_queue as $row) {
-				$command = exec('which php')." ".$_SERVER['DOCUMENT_ROOT']."/app/email_queue/resources/jobs/email_send.php ";
+				$command = exec('which php')." ".$document_root."/app/email_queue/resources/jobs/email_send.php ";
 				$command .= "'action=send&email_queue_uuid=".$row["email_queue_uuid"]."&hostname=".$hostname."'";
 				if (isset($debug)) {
 					//run process inline to see debug info

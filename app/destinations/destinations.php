@@ -17,18 +17,15 @@
 
 	The Initial Developer of the Original Code is
 	Mark J Crane <markjcrane@fusionpbx.com>
-	Portions created by the Initial Developer are Copyright (C) 2008-2022
+	Portions created by the Initial Developer are Copyright (C) 2008-2021
 	the Initial Developer. All Rights Reserved.
 
 	Contributor(s):
 	Mark J Crane <markjcrane@fusionpbx.com>
 */
 
-//set the include path
-	$conf = glob("{/usr/local/etc,/etc}/fusionpbx/config.conf", GLOB_BRACE);
-	set_include_path(parse_ini_file($conf[0])['document.root']);
-
-//includes files
+//includes
+	require_once "root.php";
 	require_once "resources/require.php";
 	require_once "resources/check_auth.php";
 	require_once "resources/paging.php";
@@ -205,7 +202,7 @@
 		echo button::create(['type'=>'button','label'=>$text['button-export'],'icon'=>$_SESSION['theme']['button_icon_export'],'link'=>'destination_download.php']);
 	}
 	if (permission_exists('destination_add')) {
-		echo button::create(['type'=>'button','label'=>$text['button-add'],'icon'=>$_SESSION['theme']['button_icon_add'],'id'=>'btn_add','style'=>'margin-left: 15px;','link'=>'destination_edit.php?type='.urlencode($destination_type)]);
+		echo button::create(['type'=>'button','label'=>$text['button-add'],'icon'=>$_SESSION['theme']['button_icon_add'],'id'=>'btn_add','style'=>'margin-left: 15px;','link'=>'destination_edit.php']);
 	}
 	if (permission_exists('destination_delete') && $destinations) {
 		echo button::create(['type'=>'button','label'=>$text['button-delete'],'icon'=>$_SESSION['theme']['button_icon_delete'],'id'=>'btn_delete','name'=>'btn_delete','style'=>'display: none;','onclick'=>"modal_open('modal-delete','btn_delete');"]);
@@ -263,7 +260,7 @@
 	}
 	echo th_order_by('destination_number', $text['label-destination_number'], $order_by, $order, $param, "class='shrink'");
 	if (!$_GET['show'] == "all") {
-		echo  "<th>". $text['label-destination_actions']."</th>";
+		echo  "<th>". $text['label-detail_action']."</th>";
 	}
 	if (permission_exists("destination_context")) {
 		echo th_order_by('destination_context', $text['label-destination_context'], $order_by, $order, $param);
@@ -282,22 +279,9 @@
 	if (is_array($destinations) && @sizeof($destinations) != 0) {
 		$x = 0;
 		foreach($destinations as $row) {
-
-			//prepare the destination actions
-			$destination_actions = json_decode($row['destination_actions'], true);
-			if (is_array($destination_actions)) {
-				foreach($destination_actions as $action) {
-					$destination_app = $action['destination_app'];
-					$destination_data = $action['destination_data'];
-				}
-			}
-
-			//create the row link
 			if (permission_exists('destination_edit')) {
 				$list_row_url = "destination_edit.php?id=".urlencode($row['destination_uuid']);
 			}
-
-			//show the data
 			echo "<tr class='list-row' href='".$list_row_url."'>\n";
 			if (permission_exists('destination_delete')) {
 				echo "	<td class='checkbox'>\n";
@@ -315,7 +299,7 @@
 				echo "	<td>".escape($domain)."</td>\n";
 			}
 			echo "	<td>".escape($row['destination_type'])."&nbsp;</td>\n";
-
+			
 			echo "	<td>".escape($row['destination_prefix'])."&nbsp;</td>\n";
 			if (permission_exists('destination_trunk_prefix')) {
 				echo "	<td>".escape($row['destination_trunk_prefix'])."&nbsp;</td>\n";
@@ -334,7 +318,7 @@
 			echo "	</td>\n";
 
 			if (!$_GET['show'] == "all") {
-				echo "	<td class='overflow' style='min-width: 125px;'>".action_name($destination_array, $destination_app.':'.$destination_data)."&nbsp;</td>\n";
+				echo "	<td class='overflow' style='min-width: 125px;'>".action_name($destination_array, $row['destination_app'].':'.$row['destination_data'])."&nbsp;</td>\n";
 			}
 			if (permission_exists("destination_context")) {
 				echo "	<td>".escape($row['destination_context'])."&nbsp;</td>\n";
@@ -351,11 +335,6 @@
 				echo "	</td>\n";
 			}
 			echo "</tr>\n";
-
-			//unset the destination app and data
-			unset($destination_app, $destination_data);
-
-			//increment the id
 			$x++;
 		}
 		unset($destinations);

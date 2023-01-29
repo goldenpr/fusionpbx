@@ -1,10 +1,7 @@
 <?php
 
-//set the include path
-	$conf = glob("{/usr/local/etc,/etc}/fusionpbx/config.conf", GLOB_BRACE);
-	set_include_path(parse_ini_file($conf[0])['document.root']);
-
-//includes files
+//includes
+	require_once "root.php";
 	require_once "resources/require.php";
 
 //check permisions
@@ -21,17 +18,16 @@
 	$language = new text;
 	$text = $language->get($_SESSION['domain']['language']['code'], 'core/user_settings');
 
-//create assigned extensions array
-	if (is_array($_SESSION['user']['extension'])) {
-		foreach ($_SESSION['user']['extension'] as $assigned_extension) {
-			$assigned_extensions[$assigned_extension['extension_uuid']] = $assigned_extension['user'];
-		}
+//recent calls
+	echo "<div class='hud_box'>\n";
+
+	foreach ($_SESSION['user']['extension'] as $assigned_extension) {
+		$assigned_extensions[$assigned_extension['extension_uuid']] = $assigned_extension['user'];
 	}
 
-//if also viewing system status, show more recent calls (more room avaialble)
+	//if also viewing system status, show more recent calls (more room avaialble)
 	$recent_limit = (is_array($selected_blocks) && in_array('counts', $selected_blocks)) ? 10 : 5;
 
-//get the recent calls from call detail records
 	$sql = "
 		select
 			direction,
@@ -70,57 +66,59 @@
 		order by
 			start_epoch desc";
 	$parameters['domain_uuid'] = $_SESSION['domain_uuid'];
-	if (!isset($database)) { $database = new database; }
+	$database = new database;
 	$result = $database->select($sql, $parameters, 'all');
 	$num_rows = is_array($result) ? sizeof($result) : 0;
 
-//define row styles
 	$c = 0;
 	$row_style["0"] = "row_style0";
 	$row_style["1"] = "row_style1";
 
-//recent calls
-	echo "<div class='hud_box'>\n";
-
 //add doughnut chart
 	?>
-	<div style='display: flex; flex-wrap: wrap; justify-content: center; padding-bottom: 20px; cursor: pointer;' onclick="$('#hud_recent_calls_details').slideToggle('fast');">
-		<canvas id='recent_calls_chart' width='175px' height='175px'></canvas>
+	<div style='display: flex; flex-wrap: wrap; justify-content: center; padding-bottom: 20px;'>
+		<div style='width: 175px; height: 175px;'><canvas id='recent_calls_chart'></canvas></div>
 	</div>
 
 	<script>
-		const recent_calls_chart = new Chart(
-			document.getElementById('recent_calls_chart').getContext('2d'),
-			{
-				type: 'doughnut',
-				data: {
-					datasets: [{
-						data: ['<?php echo $num_rows; ?>', 0.00001],
-						backgroundColor: ['<?php echo $_SESSION['dashboard']['recent_calls_chart_main_background_color']['text']; ?>',
-						'<?php echo $_SESSION['dashboard']['missed_calls_chart_sub_background_color']['text']; ?>'],
-						borderColor: '<?php echo $_SESSION['dashboard']['recent_calls_chart_border_color']['text']; ?>',
-						borderWidth: '<?php echo $_SESSION['dashboard']['recent_calls_chart_border_width']['text']; ?>',
-						cutout: chart_cutout
-					}]
-				},
-				options: {
-					responsive: true,
-					maintainAspectRatio: false,
-					plugins: {
-						chart_counter: {
-							chart_text: '<?php echo $num_rows; ?>'
-						},
-						legend: {
-							display: false
-						},
-						title: {
-							display: true,
-							text: '<?php echo $text['label-recent_calls']; ?>'
-						}
+		var recent_calls_chart_context = document.getElementById('recent_calls_chart').getContext('2d');
+
+		const recent_calls_chart_data = {
+			datasets: [{
+				data: ['<?php echo $num_rows; ?>', 0.00001],
+				backgroundColor: ['<?php echo $_SESSION['dashboard']['recent_calls_chart_main_background_color']['text']; ?>',
+				'<?php echo $_SESSION['dashboard']['missed_calls_chart_sub_background_color']['text']; ?>'],
+				borderColor: '<?php echo $_SESSION['dashboard']['recent_calls_chart_border_color']['text']; ?>',
+				borderWidth: '<?php echo $_SESSION['dashboard']['recent_calls_chart_border_width']['text']; ?>',
+				cutout: chart_cutout
+			}]
+		};
+
+		const recent_calls_chart_config = {
+			type: 'doughnut',
+			data: recent_calls_chart_data,
+			options: {
+				responsive: true,
+				maintainAspectRatio: false,
+				plugins: {
+					chart_counter: {
+						chart_text: '<?php echo $num_rows; ?>'
+					},
+					legend: {
+						display: false
+					},
+					title: {
+						display: true,
+						text: '<?php echo $text['label-recent_calls']; ?>'
 					}
-				},
-				plugins: [chart_counter],
-			}
+				}
+			},
+			plugins: [chart_counter],
+		};
+
+		const recent_calls_chart = new Chart(
+			recent_calls_chart_context,
+			recent_calls_chart_config
 		);
 	</script>
 	<?php
@@ -186,7 +184,7 @@
 			echo "<tr ".$tr_link.">\n";
 			//determine call result and appropriate icon
 				echo "<td valign='middle' class='".$row_style[$c]."' style='cursor: help; padding: 0 0 0 6px;'>\n";
-				if ($theme_cdr_images_exist) {
+				//if ($theme_cdr_images_exist) {
 					if ($row['direction'] == 'inbound' || $row['direction'] == 'local') {
 						if ($row['answer_stamp'] != '' && $row['bridge_uuid'] != '') { $call_result = 'answered'; }
 						else if ($row['answer_stamp'] != '' && $row['bridge_uuid'] == '') { $call_result = 'voicemail'; }
@@ -201,7 +199,7 @@
 					if (isset($row['direction'])) {
 						echo "<img src='".PROJECT_PATH."/themes/".$_SESSION['domain']['template']['name']."/images/icon_cdr_".$row['direction']."_".$call_result.".png' width='16' style='border: none;' title='".$text['label-'.$row['direction']].": ".$text['label-'.$call_result]."'>\n";
 					}
-				}
+				//}
 				echo "</td>\n";
 				echo "<td valign='top' class='".$row_style[$c]." hud_text' nowrap='nowrap'><a href='javascript:void(0);' ".(($cdr_name != '') ? "title=\"".$cdr_name."\"" : null).">".$cdr_number."</a></td>\n";
 				echo "<td valign='top' class='".$row_style[$c]." hud_text' nowrap='nowrap'>".$tmp_start_epoch."</td>\n";

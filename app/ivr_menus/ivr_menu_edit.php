@@ -25,11 +25,8 @@
 	Luis Daniel Lucio Quiroz <dlucio@okay.com.mx>
 */
 
-//set the include path
-	$conf = glob("{/usr/local/etc,/etc}/fusionpbx/config.conf", GLOB_BRACE);
-	set_include_path(parse_ini_file($conf[0])['document.root']);
-
-//includes files
+//includes
+	require_once "root.php";
 	require_once "resources/require.php";
 	require_once "resources/check_auth.php";
 	require_once "resources/classes/logging.php";
@@ -326,7 +323,6 @@
 							}
 							$array['ivr_menus'][0]['ivr_menu_options'][$y]["ivr_menu_option_order"] = $row["ivr_menu_option_order"];
 							$array['ivr_menus'][0]['ivr_menu_options'][$y]["ivr_menu_option_description"] = $row["ivr_menu_option_description"];
-							$array['ivr_menus'][0]["ivr_menu_options"][$y]["ivr_menu_option_enabled"] = $row['ivr_menu_option_enabled'] ?: 'false';
 							$y++;
 						}
 					}
@@ -335,12 +331,11 @@
 					$dialplan_xml = "<extension name=\"".$ivr_menu_name."\" continue=\"false\" uuid=\"".$dialplan_uuid."\">\n";
 					$dialplan_xml .= "	<condition field=\"destination_number\" expression=\"^".$ivr_menu_extension."\$\">\n";
 					$dialplan_xml .= "		<action application=\"ring_ready\" data=\"\"/>\n";
-					if ($_SESSION['ivr_menu']['answer']['boolean'] == 'true') {
-						$dialplan_xml .= "		<action application=\"answer\" data=\"\"/>\n";
-					}
+					$dialplan_xml .= "		<action application=\"answer\" data=\"\"/>\n";
 					$dialplan_xml .= "		<action application=\"sleep\" data=\"1000\"/>\n";
 					$dialplan_xml .= "		<action application=\"set\" data=\"hangup_after_bridge=true\"/>\n";
 					$dialplan_xml .= "		<action application=\"set\" data=\"ringback=".$ivr_menu_ringback."\"/>\n";
+					$dialplan_xml .= "		<action application=\"set\" data=\"presence_id=".$ivr_menu_extension."@".$_SESSION['domain_name']."\"/>\n";
 					if (strlen($ivr_menu_language) > 0) {
 						$dialplan_xml .= "		<action application=\"set\" data=\"default_language=".$ivr_menu_language."\" inline=\"true\"/>\n";
 						$dialplan_xml .= "		<action application=\"set\" data=\"default_dialect=".$ivr_menu_dialect."\" inline=\"true\"/>\n";
@@ -541,7 +536,6 @@
 		$ivr_menu_options[$id]['ivr_menu_option_param'] = '';
 		$ivr_menu_options[$id]['ivr_menu_option_order'] = '';
 		$ivr_menu_options[$id]['ivr_menu_option_description'] = '';
-		$ivr_menu_options[$id]['ivr_menu_option_enabled'] = '';
 		$id++;
 	}
 
@@ -1033,7 +1027,6 @@
 	echo "					<td class='vtable'>".$text['label-destination']."</td>\n";
 	echo "					<td class='vtable'>".$text['label-order']."</td>\n";
 	echo "					<td class='vtable'>".$text['label-description']."</td>\n";
-	echo "					<td class='vtable'>".$text['label-enabled']."</td>\n";
 	if ($show_option_delete && permission_exists('ivr_menu_option_delete')) {
 		echo "					<td class='vtable edit_delete_checkbox_all' onmouseover=\"swap_display('delete_label_options', 'delete_toggle_options');\" onmouseout=\"swap_display('delete_label_options', 'delete_toggle_options');\">\n";
 		echo "						<span id='delete_label_options'>".$text['label-delete']."</span>\n";
@@ -1051,15 +1044,7 @@
 			}
 
 			echo "<td class='formfld' align='center'>\n";
-			if (!is_uuid($field['ivr_menu_option_uuid'])) { // new record
-				if (substr($_SESSION['theme']['input_toggle_style']['text'], 0, 6) == 'switch') {
-					$onkeyup = "onkeyup=\"document.getElementById('ivr_menu_options_".$x."_ivr_menu_option_enabled').checked = (this.value != '' ? true : false);\""; // switch
-				}
-				else {
-					$onkeyup = "onkeyup=\"document.getElementById('ivr_menu_options_".$x."_ivr_menu_option_enabled').value = (this.value != '' ? true : false);\""; // select
-				}
-			}
-			echo "  <input class='formfld' style='width: 50px; text-align: center;' type='text' name='ivr_menu_options[".$x."][ivr_menu_option_digits]' maxlength='255' value='".escape($field['ivr_menu_option_digits'])."' ".$onkeyup.">\n";
+			echo "  <input class='formfld' style='width: 50px; text-align: center;' type='text' name='ivr_menu_options[".$x."][ivr_menu_option_digits]' maxlength='255' value='".escape($field['ivr_menu_option_digits'])."'>\n";
 			echo "</td>\n";
 
 			echo "<td class='formfld' align='left' nowrap='nowrap'>\n";
@@ -1092,22 +1077,7 @@
 			echo "<td class='formfld' align='left'>\n";
 			echo "	<input class='formfld' style='width:100px' type='text' name='ivr_menu_options[".$x."][ivr_menu_option_description]' maxlength='255' value=\"".escape($field['ivr_menu_option_description'])."\">\n";
 			echo "</td>\n";
-			echo "<td class='formfld'>\n";
-			// switch
-			if (substr($_SESSION['theme']['input_toggle_style']['text'], 0, 6) == 'switch') {
-				echo "	<label class='switch'>\n";
-				echo "		<input type='checkbox' id='ivr_menu_options_".$x."_ivr_menu_option_enabled' name='ivr_menu_options[".$x."][ivr_menu_option_enabled]' value='true' ".($field['ivr_menu_option_enabled'] == 'true' ? "checked='checked'" : null).">\n";
-				echo "		<span class='slider'></span>\n";
-				echo "	</label>\n";
-			}
-			// select
-			else {
-				echo "	<select class='formfld' id='ivr_menu_options_".$x."_ivr_menu_option_enabled' name='ivr_menu_options[".$x."][ivr_menu_option_enabled]'>\n";
-				echo "		<option value='false'>".$text['option-false']."</option>\n";
-				echo "		<option value='true' ".($field['ivr_menu_option_enabled'] == 'true' ? "selected='selected'" : null).">".$text['option-true']."</option>\n";
-				echo "	</select>\n";
-			}
-			echo "</td>\n";
+
 			if ($show_option_delete && permission_exists('ivr_menu_option_delete')) {
 				if (is_uuid($field['ivr_menu_option_uuid'])) {
 					echo "<td class='vtable' style='text-align: center; padding-bottom: 3px;'>";

@@ -27,16 +27,13 @@
 	POSSIBILITY OF SUCH DAMAGE.
 */
 
-//set the include path
-	$conf = glob("{/usr/local/etc,/etc}/fusionpbx/config.conf", GLOB_BRACE);
-	set_include_path(parse_ini_file($conf[0])['document.root']);
-
-//includes files
+//includes
+	include "root.php";
 	require_once "resources/require.php";
 	require_once "resources/check_auth.php";
 
 //check permissions
-	if (permission_exists('call_center_active_options')) {
+	if (permission_exists('call_center_active_view')) {
 		//access granted
 	}
 	else {
@@ -81,9 +78,6 @@
 		case "uuid_transfer":
 			$switch_command = "uuid_transfer ".$uuid." -bleg ".$_SESSION['user']['extension'][0]['user']." XML ".$_SESSION['domain_name'];
 			break;
-		case "uuid_pickup":
-				$switch_command = "uuid_transfer ".$uuid." ".$_SESSION['user']['extension'][0]['user']." XML ".$_SESSION['domain_name'];
-				break;
 		case "bridge":
 			$switch_command = "originate {origination_caller_id_name=".$caller_id_name.",origination_caller_id_number=".$caller_id_number."}user/".$_SESSION['user']['extension'][0]['user']."@".$_SESSION['domain_name']." bridge(user/".$extension."@".$_SESSION['domain_name'].")";
 			break;

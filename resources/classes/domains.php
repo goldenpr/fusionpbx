@@ -17,7 +17,7 @@
 
 	The Initial Developer of the Original Code is
 	Mark J Crane <markjcrane@fusionpbx.com>
-	Portions created by the Initial Developer are Copyright (C) 2008-2022
+	Portions created by the Initial Developer are Copyright (C) 2008-2021
 	the Initial Developer. All Rights Reserved.
 
 	Contributor(s):
@@ -621,12 +621,8 @@ if (!class_exists('domains')) {
 				$db_path = $config->db_path;
 				$db_port = $config->db_port;
 
-			//set the include path
-				$conf = glob("{/usr/local/etc,/etc}/fusionpbx/config.conf", GLOB_BRACE);
-				set_include_path(parse_ini_file($conf[0])['document.root']);
-
-			//includes files
-				include "resources/require.php";
+			//get the PROJECT PATH
+				include "root.php";
 
 			//check for default settings
 				$this->settings();
@@ -745,6 +741,12 @@ if (!class_exists('domains')) {
 						$domains_processed++;
 				}
 
+			//update config.lua
+				if (file_exists($_SERVER["DOCUMENT_ROOT"].PROJECT_PATH.'/app/scripts/resources/classes/scripts.php')) {
+					$obj = new scripts;
+					$obj->write_config();
+				}
+
 			//clear the session variables
 				unset($_SESSION['domain']);
 				unset($_SESSION['switch']);
@@ -756,9 +758,6 @@ if (!class_exists('domains')) {
 		 * update the uuid for older default settings that were added before the uuids was predefined.
 		 */
 		public function settings() {
-
-			//includes files
-				include "resources/require.php";
 
 			//get an array of the default settings UUIDs
 				$sql = "select * from v_default_settings ";
