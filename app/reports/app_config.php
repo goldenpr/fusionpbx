@@ -45,10 +45,10 @@
 		$apps[$x]['permissions'][$y]['groups'][] = "superadmin";
 		$y++;
 		$apps[$x]['permissions'][$y]['name'] = "reports_edit";
-		//$apps[$x]['permissions'][$y]['groups'][] = "superadmin";
+		$apps[$x]['permissions'][$y]['groups'][] = "superadmin";
 		$y++;
 		$apps[$x]['permissions'][$y]['name'] = "reports_delete";
-		//$apps[$x]['permissions'][$y]['groups'][] = "superadmin";
+		$apps[$x]['permissions'][$y]['groups'][] = "superadmin";
 		$y++;
 		$apps[$x]['permissions'][$y]['name'] = "reports_search";
 		$apps[$x]['permissions'][$y]['groups'][] = "user";
