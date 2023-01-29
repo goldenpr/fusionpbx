@@ -423,9 +423,18 @@ if (!class_exists('xml_cdr')) {
 							//answered call
 							$missed_call = 'false';
 						}
+						elseif (isset($xml->variables->cc_side) && $xml->variables->cc_side == 'agent') {
+							//call center
+							$missed_call = 'false';
+						}
 						else {
 							//missed call
 							$missed_call = 'true';
+						}
+
+					//get the last bridge_uuid from the call to preserve previous behavior
+						foreach ($xml->variables->bridge_uuids as $bridge) {
+							$last_bridge = urldecode($bridge);
 						}
 
 					//misc
@@ -442,7 +451,7 @@ if (!class_exists('xml_cdr')) {
 						$this->array[$key]['caller_destination'] = $caller_destination;
 						$this->array[$key]['accountcode'] = urldecode($xml->variables->accountcode);
 						$this->array[$key]['default_language'] = urldecode($xml->variables->default_language);
-						$this->array[$key]['bridge_uuid'] = urldecode($xml->variables->bridge_uuid);
+						$this->array[$key]['bridge_uuid'] = urldecode($xml->variables->bridge_uuid) ?: $last_bridge;
 						//$this->array[$key]['digits_dialed'] = urldecode($xml->variables->digits_dialed);
 						$this->array[$key]['sip_hangup_disposition'] = urldecode($xml->variables->sip_hangup_disposition);
 						$this->array[$key]['pin_number'] = urldecode($xml->variables->pin_number);
@@ -678,7 +687,7 @@ if (!class_exists('xml_cdr')) {
 							}
 						}
 						if (!isset($record_name)) {
-							$bridge_uuid = urldecode($xml->variables->bridge_uuid);
+							$bridge_uuid = urldecode($xml->variables->bridge_uuid) ?: $last_bridge;
 							$path = $_SESSION['switch']['recordings']['dir'].'/'.$domain_name.'/archive/'.$start_year.'/'.$start_month.'/'.$start_day;
 							if (file_exists($path.'/'.$bridge_uuid.'.wav')) {
 								$record_path = $path;
@@ -705,7 +714,7 @@ if (!class_exists('xml_cdr')) {
 
 					//last check
 						 if (!isset($record_name) || is_null ($record_name) || (strlen($record_name) == 0)) {
-							$bridge_uuid = urldecode($xml->variables->bridge_uuid);
+							$bridge_uuid = urldecode($xml->variables->bridge_uuid) ?: $last_bridge ;
 							$path = $_SESSION['switch']['recordings']['dir'].'/'.$domain_name.'/archive/'.$start_year.'/'.$start_month.'/'.$start_day;
 							if (file_exists($path.'/'.$bridge_uuid.'.wav')) {
 								$record_path = $path;
