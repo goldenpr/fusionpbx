@@ -51,7 +51,7 @@
 		$apps[$x]['destinations'][$y]['field']['dialect'] = 'dialect';
 		$apps[$x]['destinations'][$y]['field']['voice'] = 'voice';
 		$apps[$x]['destinations'][$y]['select_value']['dialplan'] = "multiset:^^,default_language=\${language},default_dialect=\${dialect},default_voice=\${voice}";
-		$apps[$x]['destinations'][$y]['select_value']['ivr'] = "menu-exec-app:multiset:^^,default_language=\${language},default_dialect=\${dialect},default_voice=\${voice}";
+		$apps[$x]['destinations'][$y]['select_value']['ivr'] = "menu-exec-app:multiset ^^,default_language=\${language},default_dialect=\${dialect},default_voice=\${voice}";
 		$apps[$x]['destinations'][$y]['select_label'] = "\${name}";
 		$z=0;
 		foreach ($languages as $language) {
@@ -74,6 +74,10 @@
 		$apps[$x]['permissions'][$y]['groups'][] = "superadmin";
 		$y++;
 		$apps[$x]['permissions'][$y]['name'] = "switch_registrations";
+		$apps[$x]['permissions'][$y]['groups'][] = "superadmin";
+		$apps[$x]['permissions'][$y]['groups'][] = "admin";
+		$y++;
+		$apps[$x]['permissions'][$y]['name'] = "language_destinations";
 		$apps[$x]['permissions'][$y]['groups'][] = "superadmin";
 		$apps[$x]['permissions'][$y]['groups'][] = "admin";
 
