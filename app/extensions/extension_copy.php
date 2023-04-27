@@ -17,7 +17,7 @@
 
 	The Initial Developer of the Original Code is
 	Mark J Crane <markjcrane@fusionpbx.com>
-	Portions created by the Initial Developer are Copyright (C) 2008-2019
+	Portions created by the Initial Developer are Copyright (C) 2008-2023
 	the Initial Developer. All Rights Reserved.
 
 	Contributor(s):
@@ -104,6 +104,8 @@
 		$dial_string = $row["dial_string"];
 		$enabled = $row["enabled"];
 		$description = $row["description"].' ('.$text['button-copy'].')';
+		$w_username = $row["w_username"];
+		$w_password = $row["w_password"];
 	}
 	unset($sql, $parameters, $row);
 
@@ -142,6 +144,8 @@
 	$array['extensions'][0]['dial_string'] = $dial_string;
 	$array['extensions'][0]['enabled'] = $enabled;
 	$array['extensions'][0]['description'] = $description;
+	$array['extensions'][0]['w_username'] = $w_username;
+	$array['extensions'][0]['w_password'] = $w_password;
 	$database = new database;
 	$database->save($array);
 	$message = $database->message;
