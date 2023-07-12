@@ -24,12 +24,8 @@
 	Mark J Crane <markjcrane@fusionpbx.com>
 */
 
-//set the include path
-	$conf = glob("{/usr/local/etc,/etc}/fusionpbx/config.conf", GLOB_BRACE);
-	set_include_path(parse_ini_file($conf[0])['document.root']);
-
 //includes files
-	require_once "resources/require.php";
+	require_once dirname(__DIR__, 2) . "/resources/require.php";
 	require_once "resources/check_auth.php";
 
 //check permissions
@@ -45,7 +41,7 @@
 	$cmd = $_GET['cmd'];
 
 //pre-populate the form
-	if (is_array($_GET) && is_uuid($_GET["id"]) && $_POST["persistformvar"] != "true") {
+	if (!empty($_GET) && is_array($_GET) && is_uuid($_GET["id"]) && (empty($_POST["persistformvar"]) || $_POST["persistformvar"] != "true")) {
 		$call_center_queue_uuid = $_GET["id"];
 		$sql = "select queue_extension from v_call_center_queues ";
 		$sql .= "where domain_uuid = :domain_uuid ";

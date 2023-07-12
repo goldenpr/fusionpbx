@@ -17,23 +17,24 @@
 
 	The Initial Developer of the Original Code is
 	Mark J Crane <markjcrane@fusionpbx.com>
-	Portions created by the Initial Developer are Copyright (C) 2022
+	Portions created by the Initial Developer are Copyright (C) 2022-2023
 	the Initial Developer. All Rights Reserved.
 
 	Contributor(s):
 	Mark J Crane <markjcrane@fusionpbx.com>
 */
 
-//set the include path
-	$conf = glob("{/usr/local/etc,/etc}/fusionpbx/config.conf", GLOB_BRACE);
-	set_include_path(parse_ini_file($conf[0])['document.root']);
+//includes files
+	require_once dirname(__DIR__, 2) . "/resources/require.php";
 
 //if config.conf file does not exist then redirect to the install page
 	if (file_exists("/usr/local/etc/fusionpbx/config.conf")){
 		//BSD
-	} elseif (file_exists("/etc/fusionpbx/config.conf")){
+	}
+	elseif (file_exists("/etc/fusionpbx/config.conf")){
 		//Linux
-	} else {
+	}
+	else {
 		header("Location: /core/install/install.php");
 		exit;
 	}
@@ -85,7 +86,7 @@
 	$sql .= ")\n";
 	$sql .= "order by dashboard_order asc \n";
 	$database = new database;
-	$dashboard = $database->select($sql, $parameters, 'all');
+	$dashboard = $database->select($sql, $parameters ?? null, 'all');
 	unset($sql, $parameters);
 
 //get http post variables and set them to php variables
@@ -176,12 +177,12 @@
 	if (is_array($dashboard) && @sizeof($dashboard) != 0) {
 		$expanded_all = true;
 		foreach ($dashboard as $row) {
-			if ($row['dashboard_details_state'] == 'contracted') { $expanded_all = false; }
+			if ($row['dashboard_details_state'] == 'contracted' || $row['dashboard_details_state'] == 'hidden') { $expanded_all = false; }
 		}
 	}
 
 //show the content
-	echo "<form id='dashboard' method='POST' onsubmit='setFormSubmitting()'>\n";
+	echo "<form id='dashboard' method='post' _onsubmit='setFormSubmitting()'>\n";
 	echo "<div class='action_bar' id='action_bar'>\n";
 	echo "	<div class='heading'><b>".$text['title-dashboard']."</b></div>\n";
 	echo "	<div class='actions'>\n";
@@ -194,7 +195,7 @@
 	}
 	echo "<span id='expand_contract'>\n";
 		echo button::create(['type'=>'button','label'=>$text['button-expand_all'],'icon'=>$_SESSION['theme']['button_icon_expand'],'id'=>'btn_expand','name'=>'btn_expand','style'=>($expanded_all ? 'display: none;' : null),'onclick'=>"$('.hud_details').slideDown('fast'); $(this).hide(); $('#btn_contract').show();"]);
-		echo button::create(['type'=>'button','label'=>$text['button-contract_all'],'icon'=>$_SESSION['theme']['button_icon_contract'],'id'=>'btn_contract','name'=>'btn_contract','style'=>(!$expanded_all ? 'display: none;' : null),'onclick'=>"$('.hud_details').slideUp('fast'); $(this).hide(); $('#btn_expand').show();"]);
+		echo button::create(['type'=>'button','label'=>$text['button-collapse_all'],'icon'=>$_SESSION['theme']['button_icon_contract'],'id'=>'btn_contract','name'=>'btn_contract','style'=>(!$expanded_all ? 'display: none;' : null),'onclick'=>"$('.hud_details').slideUp('fast'); $(this).hide(); $('#btn_expand').show();"]);
 	echo "</span>\n";
 	if (permission_exists('dashboard_edit')) {
 		echo button::create(['type'=>'button','label'=>$text['button-edit'],'icon'=>$_SESSION['theme']['button_icon_edit'],'id'=>'btn_edit','name'=>'btn_edit','style'=>'margin-left: 15px;','onclick'=>"edit_mode('on');"]);
@@ -242,7 +243,7 @@
 		foreach($dashboard as $row) {
 			$dashboard_name = strtolower($row['dashboard_name']);
 			$dashboard_name = str_replace(" ", "_", $dashboard_name);
-			if (is_numeric($dashboard_column_span)) {
+			if (isset($dashboard_column_span) && is_numeric($dashboard_column_span)) {
 				echo "#".$dashboard_name." {\n";
 				echo "	grid-column: span 1;\n";
 				echo "}\n";
@@ -366,7 +367,7 @@
 
 		.ghost {
 			border: 2px dashed rgba(0,0,0,1);
-			<?php $br = format_border_radius($_SESSION['theme']['dashboard_border_radius']['text'], '5px'); ?>
+			<?php $br = format_border_radius($_SESSION['theme']['dashboard_border_radius']['text'] ?? null, '5px'); ?>
 			-webkit-border-radius: <?php echo $br['tl']['n'].$br['tl']['u']; ?> <?php echo $br['tr']['n'].$br['tr']['u']; ?> <?php echo $br['br']['n'].$br['br']['u']; ?> <?php echo $br['bl']['n'].$br['bl']['u']; ?>;
 			-moz-border-radius: <?php echo $br['tl']['n'].$br['tl']['u']; ?> <?php echo $br['tr']['n'].$br['tr']['u']; ?> <?php echo $br['br']['n'].$br['br']['u']; ?> <?php echo $br['bl']['n'].$br['bl']['u']; ?>;
 			border-radius: <?php echo $br['tl']['n'].$br['tl']['u']; ?> <?php echo $br['tr']['n'].$br['tr']['u']; ?> <?php echo $br['br']['n'].$br['br']['u']; ?> <?php echo $br['bl']['n'].$br['bl']['u']; ?>;
@@ -401,6 +402,15 @@
 						document.getElementById('widget_order').value = widget_ids_list;
 					},
 				});
+
+				// set initial widget order
+				let widget_ids = document.querySelectorAll("#widgets > div[id]");
+				let widget_ids_list = [];
+				for (let i = 0; i < widget_ids.length; i++) {
+					widget_ids_list.push(widget_ids[i].id);
+				}
+				document.getElementById('widget_order').value = widget_ids_list;
+
 			}
 			else { // off
 

@@ -1,6 +1,6 @@
 <?php
 /*
-	Copyright (C) 2022 Mark J Crane <markjcrane@fusionpbx.com>
+	Copyright (C) 2022-2023 Mark J Crane <markjcrane@fusionpbx.com>
 
 	Redistribution and use in source and binary forms, with or without
 	modification, are permitted provided that the following conditions are met:
@@ -24,12 +24,8 @@
 
 //check the permission
 	if (defined('STDIN')) {
-		//set the include path
-		$conf = glob("{/usr/local/etc,/etc}/fusionpbx/config.conf", GLOB_BRACE);
-		set_include_path(parse_ini_file($conf[0])['document.root']);
-
 		//includes files
-		require_once "resources/require.php";
+		require_once dirname(__DIR__, 4) . "/resources/require.php";
 	}
 	else {
 		//only allow running this from command line
@@ -51,6 +47,7 @@
 	if (isset($_GET['hostname'])) {
 		$hostname = urldecode($_GET['hostname']);
 	}
+	$debug = false;
 	if (isset($_GET['debug'])) {
 		if (is_numeric($_GET['debug'])) {
 			$debug_level = $_GET['debug'];
@@ -211,9 +208,10 @@
 					}
 
 					//log the blocked ip address to the database
-					$array['event_guard_logs'][0]['event_guard_log_uuid'] = $row['event_guard_log_uuid'];
-					$array['event_guard_logs'][0]['log_date'] = 'now()';
-					$array['event_guard_logs'][0]['log_status'] = 'unblocked';
+					$array['event_guard_logs'][$x]['event_guard_log_uuid'] = $row['event_guard_log_uuid'];
+					$array['event_guard_logs'][$x]['log_date'] = 'now()';
+					$array['event_guard_logs'][$x]['log_status'] = 'unblocked';
+					$x++;
 				}
 				if (is_array($array)) {
 					$p = new permissions;
@@ -586,6 +584,7 @@
 		$sql .= "from v_user_logs ";
 		$sql .= "where remote_address = :remote_address ";
 		$sql .= "and result = 'success' ";
+		$sql .= "and timestamp > NOW() - INTERVAL '8 days' ";
 		$parameters['remote_address'] = $ip_address;  
 		$database = new database;
 		$user_log_count = $database->select($sql, $parameters, 'column');
