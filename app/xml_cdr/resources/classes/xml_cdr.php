@@ -353,6 +353,16 @@ if (!class_exists('xml_cdr')) {
 					unset($sql, $parameters);
 				}
 
+			//set the call_direction
+				if (isset($xml->variables->call_direction)) {
+					$call_direction = urldecode($xml->variables->call_direction);
+				}
+
+			//set the accountcode
+				if (isset($xml->variables->accountcode)) {
+					$accountcode = urldecode($xml->variables->accountcode);
+				}
+
 			//process data if the call detail record is not a duplicate
 				if ($duplicate_uuid == false && is_uuid($uuid)) {
 
@@ -399,7 +409,7 @@ if (!class_exists('xml_cdr')) {
 							$caller_id_number = urldecode($xml->variables->origination_caller_id_number);
 						}
 
-						if (urldecode($xml->variables->call_direction) == 'outbound' && isset($xml->variables->effective_caller_id_number)) {
+						if (urldecode($call_direction) == 'outbound' && isset($xml->variables->effective_caller_id_number)) {
 							$caller_id_number = urldecode($xml->variables->effective_caller_id_number);
 						}
 
@@ -489,6 +499,28 @@ if (!class_exists('xml_cdr')) {
 							$missed_call = 'true';
 						}
 
+					//read the bridge statement variables
+						if (isset($xml->variables->last_app)) {
+							if (urldecode($xml->variables->last_app) == 'bridge') {
+								//get the variables from inside the { and } brackets
+								preg_match('/^\{([^}]+)\}/', urldecode($xml->variables->last_arg), $matches);
+
+								//create a variables array from the comma delimitted string
+								$bridge_variables = explode(",", $matches[1]);
+
+								//set bridge variables as variables
+								$x = 0;
+								if (!empty($bridge_variables)) {
+									foreach($bridge_variables as $variable) {
+										$pairs = explode("=", $variable);
+										$name = $pairs[0];
+										$$name = $pairs[1];
+										$x++;
+									}
+								}
+							}
+						}
+
 					//get the last bridge_uuid from the call to preserve previous behavior
 						foreach ($xml->variables->bridge_uuids as $bridge) {
 							$last_bridge = urldecode($bridge);
@@ -507,7 +539,7 @@ if (!class_exists('xml_cdr')) {
 						$this->array[$key]['caller_id_name'] = $caller_id_name;
 						$this->array[$key]['caller_id_number'] = $caller_id_number;
 						$this->array[$key]['caller_destination'] = $caller_destination;
-						$this->array[$key]['accountcode'] = urldecode($xml->variables->accountcode);
+						$this->array[$key]['accountcode'] = urldecode($accountcode);
 						$this->array[$key]['default_language'] = urldecode($xml->variables->default_language);
 						$this->array[$key]['bridge_uuid'] = urldecode($xml->variables->bridge_uuid) ?: $last_bridge;
 						//$this->array[$key]['digits_dialed'] = urldecode($xml->variables->digits_dialed);
@@ -539,7 +571,7 @@ if (!class_exists('xml_cdr')) {
 						$this->array[$key]['hangup_cause_q850'] = urldecode($xml->variables->hangup_cause_q850);
 
 					//store the call direction
-						$this->array[$key]['direction'] = urldecode($xml->variables->call_direction);
+						$this->array[$key]['direction'] = urldecode($call_direction);
 
 					//call center
 						if ($xml->variables->cc_member_uuid == '_undef_') { $xml->variables->cc_member_uuid = ''; }
@@ -683,7 +715,7 @@ if (!class_exists('xml_cdr')) {
 						}
 
 					//get the recording details
-						if (isset($xml->variables->record_path)) {
+						if (isset($xml->variables->record_path) && isset($xml->variables->record_name)) {
 							$record_path = urldecode($xml->variables->record_path);
 							$record_name = urldecode($xml->variables->record_name);
 							if (isset($xml->variables->record_seconds)) {
@@ -693,29 +725,19 @@ if (!class_exists('xml_cdr')) {
 								$record_length = urldecode($xml->variables->duration);
 							}
 						}
+						elseif (isset($xml->variables->cc_record_filename)) {
+							$record_path = dirname(urldecode($xml->variables->cc_record_filename));
+							$record_name = basename(urldecode($xml->variables->cc_record_filename));
+							$record_length = urldecode($xml->variables->record_seconds);
+						}
 						elseif (!isset($record_path) && urldecode($xml->variables->last_app) == "record_session") {
 							$record_path = dirname(urldecode($xml->variables->last_arg));
 							$record_name = basename(urldecode($xml->variables->last_arg));
 							$record_length = urldecode($xml->variables->record_seconds);
 						}
-						elseif (isset($xml->variables->record_name)) {
-							if (isset($xml->variables->record_path)) {
-								$record_path = urldecode($xml->variables->record_path);
-							}
-							else {
-								$record_path = $_SESSION['switch']['recordings']['dir'].'/'.$domain_name.'/archive/'.$start_year.'/'.$start_month.'/'.$start_day;
-							}
-							$record_name = urldecode($xml->variables->record_name);
-							$record_length = urldecode($xml->variables->duration);
-						}
 						elseif (!empty($xml->variables->sofia_record_file)) {
 							$record_path = dirname(urldecode($xml->variables->sofia_record_file));
 							$record_name = basename(urldecode($xml->variables->sofia_record_file));
-							$record_length = urldecode($xml->variables->record_seconds);
-						}
-						elseif (!empty($xml->variables->cc_record_filename)) {
-							$record_path = dirname(urldecode($xml->variables->cc_record_filename));
-							$record_name = basename(urldecode($xml->variables->cc_record_filename));
 							$record_length = urldecode($xml->variables->record_seconds);
 						}
 						elseif (!empty($xml->variables->api_on_answer)) {
@@ -751,20 +773,9 @@ if (!class_exists('xml_cdr')) {
 								}
 							}
 						}
-						if (!isset($record_name)) {
-							$bridge_uuid = urldecode($xml->variables->bridge_uuid) ?: $last_bridge;
-							$path = $_SESSION['switch']['recordings']['dir'].'/'.$domain_name.'/archive/'.$start_year.'/'.$start_month.'/'.$start_day;
-							if (file_exists($path.'/'.$bridge_uuid.'.wav')) {
-								$record_path = $path;
-								$record_name = $bridge_uuid.'.wav';
-								$record_length = urldecode($xml->variables->duration);
-							} elseif (file_exists($path.'/'.$bridge_uuid.'.mp3')) {
-								$record_path = $path;
-								$record_name = $bridge_uuid.'.mp3';
-								$record_length = urldecode($xml->variables->duration);
-							}
-						}
-						if (!isset($record_name)) {
+					
+					//check to see if file exists with the default file name and path
+						if (empty($record_name)) {
 							$path = $_SESSION['switch']['recordings']['dir'].'/'.$domain_name.'/archive/'.$start_year.'/'.$start_month.'/'.$start_day;
 							if (file_exists($path.'/'.$uuid.'.wav')) {
 								$record_path = $path;
@@ -777,19 +788,11 @@ if (!class_exists('xml_cdr')) {
 							}
 						}
 
-					//last check
-						 if (!isset($record_name) || is_null ($record_name) || (empty($record_name))) {
-							$bridge_uuid = urldecode($xml->variables->bridge_uuid) ?: $last_bridge ;
+					//last check - check to see if file exists with the bridge_uuid for the file name and path
+						 if (empty($record_name)) {
+							$bridge_uuid = urldecode($xml->variables->bridge_uuid) ?: $last_bridge;
 							$path = $_SESSION['switch']['recordings']['dir'].'/'.$domain_name.'/archive/'.$start_year.'/'.$start_month.'/'.$start_day;
 							if (file_exists($path.'/'.$bridge_uuid.'.wav')) {
-								$record_path = $path;
-								$record_name = $bridge_uuid.'.wav';
-								$record_length = urldecode($xml->variables->duration);
-							} elseif (file_exists($path.'/'.$bridge_uuid.'.mp3')) {
-								$record_path = $path;
-								$record_name = $bridge_uuid.'.mp3';
-								$record_length = urldecode($xml->variables->duration);
-							} elseif (file_exists($path.'/'.$bridge_uuid.'.wav')) {
 								$record_path = $path;
 								$record_name = $bridge_uuid.'.wav';
 								$record_length = urldecode($xml->variables->duration);
@@ -830,7 +833,7 @@ if (!class_exists('xml_cdr')) {
 							$array['call_recordings'][$x]['call_recording_path'] = $record_path;
 							$array['call_recordings'][$x]['call_recording_length'] = $record_length;
 							$array['call_recordings'][$x]['call_recording_date'] = date('c', $start_epoch);
-							$array['call_recordings'][$x]['call_direction'] = urldecode($xml->variables->call_direction);
+							$array['call_recordings'][$x]['call_direction'] = urldecode($call_direction);
 							//$array['call_recordings'][$x]['call_recording_description']= $row['zzz'];
 							//$array['call_recordings'][$x]['call_recording_base64']= $row['zzz'];
 

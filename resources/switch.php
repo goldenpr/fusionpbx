@@ -376,9 +376,6 @@ function save_var_xml() {
 				if ($row['var_category'] != 'Provision') {
 					if ($prev_var_category != $row['var_category']) {
 						$xml .= "\n<!-- ".$row['var_category']." -->\n";
-						if (!empty($row["var_description"])) {
-							$xml .= "<!-- ".base64_decode($row['var_description'])." -->\n";
-						}
 					}
 					if (empty($row['var_command'])) { $row['var_command'] = 'set'; }
 					if ($row['var_category'] == 'Exec-Set') { $row['var_command'] = 'exec-set'; }
@@ -443,6 +440,7 @@ function outbound_route_to_bridge($domain_uuid, $destination_number, array $chan
 	$sql .= "and (hostname = :hostname or hostname is null) ";
 	$sql .= "and d.app_uuid = '8c914ec3-9fc0-8ab5-4cda-6c9288bdc9a3' ";
 	$sql .= "and d.dialplan_enabled = 'true' ";
+	$sql .= "and (dd.dialplan_detail_enabled = 'true' or dd.dialplan_detail_enabled is null) ";
 	$sql .= "order by d.domain_uuid,  d.dialplan_order, dd.dialplan_detail_order ";
 	$parameters['hostname'] = $hostname;
 	$database = new database;
@@ -944,7 +942,8 @@ if (!function_exists('xml_cdr_conf_xml')) {
 			unset ($v_pass);
 
 		//write the XML config file
-			$fout = fopen($_SESSION['switch']['conf']['dir']."/autoload_configs/xml_cdr.conf.xml","w");
+			$switch_configuration_dir = !empty($_SESSION['switch']['conf']['dir']) ? $_SESSION['switch']['conf']['dir'] : '/etc/freeswitch';
+			$fout = fopen($switch_configuration_dir . "/autoload_configs/xml_cdr.conf.xml","w");
 			fwrite($fout, $file_contents);
 			fclose($fout);
 
