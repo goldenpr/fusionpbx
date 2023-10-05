@@ -274,44 +274,11 @@
 		}
 	}
 
+	//check if the permission exists
 	if (!function_exists('permission_exists')) {
-		function permission_exists($permission, $operator = 'or') {
-			//set default
-				$result = false;
-			//permissions exist
-				if (!empty($_SESSION["permissions"]) && is_array($_SESSION["permissions"]) && @sizeof($_SESSION['permissions']) != 0) {
-					//array
-					if (is_array($permission) && @sizeof($permission) != 0) {
-						if ($operator == 'and') {
-							$exists_all = true;
-							foreach ($permission as $perm) {
-								if ($_SESSION["permissions"][$permission] != true) {
-									$exists_all = false;
-									break;
-								}
-							}
-							$result = $exists_all;
-						}
-						else {
-							$exists_one = false;
-							foreach ($permission as $perm) {
-								if (isset($_SESSION["permissions"][$perm]) && $_SESSION["permissions"][$perm] != true) {
-									$exists_one = true;
-									break;
-								}
-							}
-							$result = $exists_one;
-						}
-					}
-					//single
-					else {
-						if (isset($_SESSION["permissions"][$permission]) && $_SESSION["permissions"][$permission] == true) {
-							$result = true;
-						}
-					}
-				}
-			//return the result
-				return $result;
+		function permission_exists($permission_name, $operator = 'or') {
+			$permission = new permissions;
+			return $permission->exists($permission_name);
 		}
 	}
 
@@ -748,7 +715,7 @@
 function switch_module_is_running($fp, $mod) {
 	if (!$fp) {
 		//if the handle does not exist create it
-			$fp = event_socket_create($_SESSION['event_socket_ip_address'], $_SESSION['event_socket_port'], $_SESSION['event_socket_password']);
+			$fp = event_socket_create();
 		//if the handle still does not exist show an error message
 			if (!$fp) {
 				$msg = "<div align='center'>Connection to Event Socket failed.<br /></div>";
@@ -1244,7 +1211,7 @@ function number_pad($number,$n) {
 				else { //rgb(a)
 					$rgb = implode(',', $color);
 					if (!empty($alpha)) { $rgb .= ','.$alpha; $a = 'a'; }
-					if ($wrapper) { $rgb = 'rgb'.$a.'('.$rgb.')'; }
+					if ($wrapper) { $rgb = 'rgb'.($a ?? '').'('.$rgb.')'; }
 					return $rgb;
 				}
 			}
@@ -1892,7 +1859,7 @@ function number_pad($number,$n) {
 //make directory with event socket
 	function event_socket_mkdir($dir) {
 		//connect to fs
-			$fp = event_socket_create($_SESSION['event_socket_ip_address'], $_SESSION['event_socket_port'], $_SESSION['event_socket_password']);
+			$fp = event_socket_create();
 			if (!$fp) {
 				return false;
 			}
@@ -2202,7 +2169,7 @@ function number_pad($number,$n) {
 	if (!function_exists('user_exists')) {
 		function user_exists($login, $domain_name = null) {
 			//connect to freeswitch
-			$fp = event_socket_create($_SESSION['event_socket_ip_address'], $_SESSION['event_socket_port'], $_SESSION['event_socket_password']);
+			$fp = event_socket_create();
 			if (!$fp) {
 				return false;
 			}
