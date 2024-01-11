@@ -1980,7 +1980,7 @@
 		echo "</td>\n";
 		echo "</tr>\n";
 	}
-
+	
 	if (permission_exists('extension_language')) {
 		echo "<tr>\n";
 		echo "<td class='vncell' valign='top' align='left' nowrap>\n";
@@ -2004,6 +2004,7 @@
 				}
 			}
 		}
+		echo "  </select>\n";
 		echo "<br />\n";
 		echo $text['description-language']."\n";
 		echo "</td>\n";
