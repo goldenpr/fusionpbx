@@ -115,6 +115,7 @@
 			$included = true;
 			require_once("core/menu/menu_restore_default.php");
 			unset($sel_menu);
+			$text = $language->get(null, '/core/upgrade');
 			message::add($text['message-upgrade_menu'], null, $message_timeout);
 		}
 
@@ -122,6 +123,7 @@
 		if ($action["permission_defaults"] && permission_exists("group_edit")) {
 			$included = true;
 			require_once("core/groups/permissions_default.php");
+			$text = $language->get(null, '/core/upgrade');
 			message::add($text['message-upgrade_permissions'], null, $message_timeout);
 		}
 		
