@@ -17,7 +17,7 @@
 
 	The Initial Developer of the Original Code is
 	Mark J Crane <markjcrane@fusionpbx.com>
-	Portions created by the Initial Developer are Copyright (C) 2008-2023
+	Portions created by the Initial Developer are Copyright (C) 2008-2019
 	the Initial Developer. All Rights Reserved.
 
 	Contributor(s):
@@ -37,6 +37,9 @@
 		echo "access denied";
 		exit;
 	}
+
+//initialize the database object
+	$database = new database;
 
 //add multi-lingual support
 	$language = new text;
@@ -66,7 +69,6 @@
 	$sql .= "and extension_uuid = :extension_uuid ";
 	$parameters['domain_uuid'] = $_SESSION['domain_uuid'];
 	$parameters['extension_uuid'] = $extension_uuid;
-	$database = new database;
 	$row = $database->select($sql, $parameters, 'row');
 	if (is_array($row) && @sizeof($row) != 0) {
 		$extension = $row["extension"];
@@ -101,8 +103,6 @@
 		$extension_type = $row["extension_type"];
 		$enabled = $row["enabled"];
 		$description = $row["description"].' ('.$text['button-copy'].')';
-		$w_username = $row["w_username"];
-		$w_password = $row["w_password"];
 	}
 	unset($sql, $parameters, $row);
 
@@ -142,11 +142,7 @@
 	$array['extensions'][0]['extension_type'] = $extension_type;
 	$array['extensions'][0]['enabled'] = $enabled;
 	$array['extensions'][0]['description'] = $description;
-	$array['extensions'][0]['w_username'] = $w_username;
-	$array['extensions'][0]['w_password'] = $w_password;
-	$database = new database;
 	$database->save($array);
-	$message = $database->message;
 	unset($array);
 
 //get the source extension voicemail data
@@ -158,7 +154,6 @@
 			$sql .= "and voicemail_id = :voicemail_id ";
 			$parameters['voicemail_id'] = is_numeric($number_alias) ? $number_alias : $extension;
 			$parameters['domain_uuid'] = $_SESSION['domain_uuid'];
-			$database = new database;
 			$row = $database->select($sql, $parameters, 'row');
 			if (is_array($row) && @sizeof($row) != 0) {
 				$voicemail_mailto = $row["voicemail_mail_to"];
