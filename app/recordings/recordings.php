@@ -37,6 +37,9 @@
 	$language = new text;
 	$text = $language->get();
 
+//initialize the database connection
+	$database = database::new();
+
 //add the settings object
 	$settings = new settings(["domain_uuid" => $_SESSION['domain_uuid'], "user_uuid" => $_SESSION['user_uuid']]);
 	$speech_enabled = $settings->get('speech', 'enabled');
@@ -61,7 +64,6 @@
 					$sql .= "and recording_uuid = :recording_uuid ";
 					$parameters['domain_uuid'] = $domain_uuid;
 					$parameters['recording_uuid'] = $recording_uuid;
-					$database = new database;
 					$row = $database->select($sql, $parameters, 'row');
 					if (is_array($row) && @sizeof($row) != 0) {
 						$recording_filename = $row['recording_filename'];
@@ -163,7 +165,6 @@
 	$sql .= "from v_recordings ";
 	$sql .= "where domain_uuid = :domain_uuid ";
 	$parameters['domain_uuid'] = $domain_uuid;
-	$database = new database;
 	$result = $database->select($sql, $parameters, 'all');
 	if (is_array($result) && @sizeof($result) != 0) {
 		foreach ($result as $row) {
@@ -179,10 +180,9 @@
 						$array['recordings'][0]['domain_uuid'] = $domain_uuid;
 						$array['recordings'][0]['recording_base64'] = null;
 					//set temporary permissions
-						$p = new permissions;
+						$p = permissions::new();
 						$p->add('recording_edit', 'temp');
 					//execute update
-						$database = new database;
 						$database->app_name = 'recordings';
 						$database->app_uuid = '83913217-c7a2-9e90-925d-a866eb40b60e';
 						$database->save($array);
@@ -217,10 +217,9 @@
 								$array['recordings'][0]['recording_base64'] = $recording_base64;
 							}
 						//set temporary permissions
-							$p = new permissions;
+							$p = permissions::new();
 							$p->add('recording_add', 'temp');
 						//execute insert
-							$database = new database;
 							$database->app_name = 'recordings';
 							$database->app_uuid = '83913217-c7a2-9e90-925d-a866eb40b60e';
 							$database->save($array);
@@ -239,10 +238,9 @@
 										$array['recordings'][0]['recording_uuid'] = $found_recording_uuid;
 										$array['recordings'][0]['recording_base64'] = $recording_base64;
 									//set temporary permissions
-										$p = new permissions;
+										$p = permissions::new();
 										$p->add('recording_edit', 'temp');
 									//execute update
-										$database = new database;
 										$database->app_name = 'recordings';
 										$database->app_uuid = '83913217-c7a2-9e90-925d-a866eb40b60e';
 										$database->save($array);
@@ -308,7 +306,6 @@
 		$sql .= ") ";
 		$parameters['search'] = '%'.strtolower($search).'%';
 	}
-	$database = new database;
 	$num_rows = $database->select($sql, $parameters ?? null, 'column');
 
 //prepare to page the results
@@ -351,7 +348,6 @@
 	}
 	$sql .= order_by($order_by, $order, 'recording_name', 'asc');
 	$sql .= limit_offset($rows_per_page, $offset);
-	$database = new database;
 	$recordings = $database->select($sql, $parameters ?? null, 'all');
 	unset($sql, $parameters);
 
@@ -378,7 +374,6 @@
 					dd.dialplan_detail_data like 'pin_number=%' and
 					dd.dialplan_detail_enabled = 'true' ";
 			$parameters['domain_uuid'] = $_SESSION['domain_uuid'];
-			$database = new database;
 			$recording_password = $database->select($sql, $parameters, 'column');
 			unset($sql, $parameters);
 		}
@@ -493,6 +488,7 @@
 	$col_count++;
 
 	echo th_order_by('recording_description', $text['label-description'], $order_by, $order, null, "class='hide-sm-dn pct-25'");
+	$col_count++;
 	if (permission_exists('recording_edit') && !empty($_SESSION['theme']['list_row_edit_button']['boolean']) && $_SESSION['theme']['list_row_edit_button']['boolean'] == 'true') {
 		echo "	<td class='action-button'>&nbsp;</td>\n";
 	}
@@ -503,7 +499,7 @@
 		foreach ($recordings as $row) {
 			//playback progress bar
 			if (permission_exists('recording_play')) {
-				echo "<tr class='list-row' id='recording_progress_bar_".escape($row['recording_uuid'])."' onclick=\"recording_play('".escape($row['voicemail_greeting_uuid'] ?? '')."')\" style='display: none;'><td id='playback_progress_bar_background_".escape($row['recording_uuid'])."' class='playback_progress_bar_background' style='padding: 0; border: none;' colspan='".$col_count."'><span class='playback_progress_bar' id='recording_progress_".escape($row['recording_uuid'])."'></span></td><td class='description hide-sm-dn' style='border-bottom: none !important;'></td></tr>\n";
+				echo "<tr class='list-row' id='recording_progress_bar_".escape($row['recording_uuid'])."' onclick=\"recording_seek(event,'".escape($row['recording_uuid'] ?? '')."')\" style='display: none;'><td id='playback_progress_bar_background_".escape($row['recording_uuid'])."' class='playback_progress_bar_background' style='padding: 0; border: none;' colspan='".$col_count."'><span class='playback_progress_bar' id='recording_progress_".escape($row['recording_uuid'])."'></span></td></tr>\n";
 				echo "<tr class='list-row' style='display: none;'><td></td></tr>\n"; // dummy row to maintain alternating background color
 			}
 			if (permission_exists('recording_edit')) {
