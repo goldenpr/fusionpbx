@@ -49,12 +49,20 @@
 		//check to see if the process is running
 		if (file_exists($file)) {
 			$pid = file_get_contents($file);
-			if (posix_getsid($pid) === false) {
-				//process is not running
-				$exists = false;
+			if (function_exists('posix_getsid')) {
+				//check if the process is running
+				$pid = posix_getsid($pid);
+				if ($pid === null || $pid === 0) {
+					//process is not running
+					$exists = false;
+				}
+				else {
+					//process is running
+					$exists = true;
+				}
 			}
 			else {
-				//process is running
+				//file exists assume the pid is running
 				$exists = true;
 			}
 		}
@@ -148,7 +156,7 @@
 
 //get the email settings
 	$retry_limit = $settings->get('email_queue', 'retry_limit');
-	$transcribe_enabled = $settings->get('transcribe', 'enabled');
+	$transcribe_enabled = $settings->get('transcribe', 'enabled', false);
 	$save_response = $settings->get('email_queue', 'save_response');
 
 //set defaults
@@ -181,6 +189,9 @@
 		//$voicemail_description = $row["voicemail_description"];
 		//$voicemail_name_base64 = $row["voicemail_name_base64"];
 		//$voicemail_tutorial = $row["voicemail_tutorial"];
+		if (gettype($voicemail_transcription_enabled) === 'string') {
+			$voicemail_transcription_enabled = ($voicemail_transcription_enabled === 'true') ? true : false;
+		}
 	}
 	unset($parameters);
 
@@ -199,7 +210,7 @@
 			$email_attachment_name = $field['email_attachment_name'];
 			$email_attachment_mime_type = $field['email_attachment_mime_type'];
 
-			if (!$email_attachment_mime_type) {
+			if (empty($email_attachment_mime_type)) {
 				switch ($email_attachment_type) {
 					case "wav":
 						$email_attachment_mime_type = "audio/x-wav";
@@ -220,7 +231,7 @@
 				}
 			}
 
-			if (isset($transcribe_enabled) && $transcribe_enabled === 'true' && isset($voicemail_transcription_enabled) && $voicemail_transcription_enabled === 'true') {
+			if ($transcribe_enabled && isset($voicemail_transcription_enabled) && $voicemail_transcription_enabled) {
 				//debug message
 				echo "transcribe enabled: true\n";
 
@@ -236,11 +247,10 @@
 						//transcribe the voicemail recording
 						$transcribe->audio_path = $email_attachment_path;
 						$transcribe->audio_filename = $email_attachment_name;
+						$transcribe->audio_mime_type = $email_attachment_mime_type;
+						$transcribe->audio_string = (!empty($field['email_attachment_base64'])) ? base64_decode($field['email_attachment_base64']) : '';
 						$transcribe_message = $transcribe->transcribe();
 					}
-
-					echo "transcribe path: ".$email_attachment_path."\n";
-					echo "transcribe name: ".$email_attachment_name."\n";
 				}
 				else {
 					$transcribe_message = $email_transcription;
@@ -441,7 +451,7 @@
 			$array['email_queue'][0]['email_status'] = 'sent';
 
 		//grant temporary permissions
-			$p = new permissions;
+			$p = permissions::new();
 			$p->add('email_queue_add', 'temp');
 			$p->add('email_queue_update', 'temp');
 		//execute insert
@@ -472,7 +482,7 @@
 		$array['email_queue'][0]['email_status'] = 'failed';
 
 		//grant temporary permissions
-		$p = new permissions;
+		$p = permissions::new();
 		$p->add('email_queue_add', 'temp');
 
 		//execute insert
@@ -526,7 +536,7 @@
 					$array['email_logs'][0]['status'] = 'failed';
 					$array['email_logs'][0]['email'] = str_replace("'", "''", $msg);
 				//grant temporary permissions
-					$p = new permissions;
+					$p = permissions::new();
 					$p->add('email_log_add', 'temp');
 				//execute insert
 					$database->app_name = 'v_mailto';
@@ -569,5 +579,3 @@
 
 	//fwrite($esl, $content);
 	//fclose($esl);
-
-?>

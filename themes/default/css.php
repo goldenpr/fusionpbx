@@ -3,7 +3,7 @@
 //includes files
 require_once dirname(__DIR__, 2) . "/resources/require.php";
 
-ob_start('ob_gzhandler');
+//ob_start('ob_gzhandler');
 header('Content-type: text/css; charset: UTF-8');
 header('Cache-Control: must-revalidate');
 header('Expires: '.gmdate('D, d M Y H:i:s',time()+3600).' GMT');
@@ -16,6 +16,8 @@ $footer_background_color = $_SESSION['theme']['footer_background_color']['text']
 $footer_border_radius = $_SESSION['theme']['footer_border_radius']['text'] ?? null;
 $footer_background_color = $_SESSION['theme']['footer_background_color']['text'] ?? 'rgba(0,0,0,0.2)';
 $footer_color = $_SESSION['theme']['footer_color']['text'] ?? 'rgba(255,255,255,0.3)';
+$text_link_color = $_SESSION['theme']['text_link_color']['text'] ?? '#004083';
+$text_link_color_hover = $_SESSION['theme']['text_link_color_hover']['text'] ?? '#5082ca';
 $menu_main_background_image = $_SESSION['theme']['menu_main_background_image']['text'] ?? null;
 $menu_main_background_color = $_SESSION['theme']['menu_main_background_color']['text'] ?? 'rgba(0,0,0,0.90)';
 $menu_main_shadow_color = isset($_SESSION['theme']['menu_main_shadow_color']['text']) ? '0 0 5px '.$_SESSION['theme']['menu_main_shadow_color']['text'] : 'none';
@@ -47,8 +49,8 @@ $menu_sub_text_color = $_SESSION['theme']['menu_sub_text_color']['text'] ?? '#ff
 $menu_sub_text_size = $_SESSION['theme']['menu_sub_text_size']['text'] ?? '10pt';
 $menu_sub_text_color_hover = $_SESSION['theme']['menu_sub_text_color_hover']['text'] ?? '#fd9c03';
 $menu_sub_background_color_hover = $_SESSION['theme']['menu_sub_background_color_hover']['text'] ?? '#141414';
-$header_user_color_hover = $_SESSION['theme']['header_user_color_hover']['text'] ?? '#1892e6';
-$header_domain_color_hover = $_SESSION['theme']['header_domain_color_hover']['text'] ?? '#1892e6';
+$header_user_color_hover = $_SESSION['theme']['header_user_color_hover']['text'] ?? null;
+$header_domain_color_hover = $_SESSION['theme']['header_domain_color_hover']['text'] ?? null;
 $logout_icon_color = $_SESSION['theme']['logout_icon_color']['text'] ?? 'rgba(255,255,255,0.8)';
 $logout_icon_color_hover = $_SESSION['theme']['logout_icon_color_hover']['text'] ?? 'rgba(255,255,255,1.0)';
 $menu_main_toggle_color = $_SESSION['theme']['menu_main_toggle_color']['text'] ?? 'rgba(255,255,255,0.8)';
@@ -60,9 +62,11 @@ $menu_main_icon_color = $_SESSION['theme']['menu_main_icon_color']['text'] ?? '#
 $menu_main_icon_color_hover = $_SESSION['theme']['menu_main_icon_color_hover']['text'] ?? '#fd9c03';
 $body_header_background_color = $_SESSION['theme']['body_header_background_color']['text'] ?? 'transparent';
 $body_header_shadow_color = $_SESSION['theme']['body_header_shadow_color']['text'] ?? '';
-$body_header_brand_text_color = $_SESSION['theme']['body_header_brand_text_color']['text'] ?? 'rgba(0,0,0,0.90)';
+$body_header_brand_text_color = $_SESSION['theme']['body_header_brand_text_color']['text'] ?? 'rgba(0,0,0,0.9)';
 $body_header_brand_text_color_hover = $_SESSION['theme']['body_header_brand_text_color_hover']['text'] ?? 'rgba(0,0,0,1.0)';
 $body_header_brand_text_size = $_SESSION['theme']['body_header_brand_text_size']['text'] ?? '16px';
+$body_header_text_link_color = $_SESSION['theme']['body_header_text_link_color']['text'] ?? $text_link_color;
+$body_header_text_link_color_hover = $_SESSION['theme']['body_header_text_link_color_hover']['text'] ?? $text_link_color_hover;
 $button_height = $_SESSION['theme']['button_height']['text'] ?? '28px';
 $button_padding = $_SESSION['theme']['button_padding']['text'] ?? '5px 8px';
 $button_border_size = $_SESSION['theme']['button_border_size']['text'] ?? '1px';
@@ -127,8 +131,6 @@ $body_width = $_SESSION['theme']['body_width']['text'] ?? '90%';
 $heading_text_color = $_SESSION['theme']['heading_text_color']['text'] ?? '#952424';
 $heading_text_size = $_SESSION['theme']['heading_text_size']['text'] ?? '15px';
 $heading_text_font = $_SESSION['theme']['heading_text_font']['text'] ?? 'arial';
-$text_link_color = $_SESSION['theme']['text_link_color']['text'] ?? '#004083';
-$text_link_color_hover = $_SESSION['theme']['text_link_color_hover']['text'] ?? '#5082ca';
 $input_text_placeholder_color = $_SESSION['theme']['input_text_placeholder_color']['text'] ?? '#999999; opacity: 1.0;';
 $input_text_font = $_SESSION['theme']['input_text_font']['text'] ?? 'Arial';
 $input_text_size = $_SESSION['theme']['input_text_size']['text'] ?? '12px';
@@ -180,10 +182,13 @@ $table_heading_padding = $_SESSION['theme']['table_heading_padding']['text'] ?? 
 $table_row_text_color = $_SESSION['theme']['table_row_text_color']['text'] ?? '#000';
 $table_row_text_font = $_SESSION['theme']['table_row_text_font']['text'] ?? 'arial';
 $table_row_text_size = $_SESSION['theme']['table_row_text_size']['text'] ?? '12px';
+$table_row_text_link_color = $_SESSION['theme']['table_row_text_link_color']['text'] ?? $text_link_color;
+$table_row_text_link_color_hover = $_SESSION['theme']['table_row_text_link_color_hover']['text'] ?? $text_link_color_hover;
 $table_row_border_color = $_SESSION['theme']['table_row_border_color']['text'] ?? '#c5d1e5';
 $table_row_background_color_light = $_SESSION['theme']['table_row_background_color_light']['text'] ?? '#fff';
 $table_row_background_color_medium = $_SESSION['theme']['table_row_background_color_medium']['text'] ?? '#f0f2f6';
-$table_row_background_color_dark = $_SESSION['theme']['table_row_background_color_dark']['text'] ?? '#e5e9f0';
+$table_row_background_color_dark = $_SESSION['theme']['table_row_background_color_dark']['text'] ?? '#edeff2';
+$table_row_background_color_hover = $_SESSION['theme']['table_row_background_color_hover']['text'] ?? null;
 $table_row_padding = $_SESSION['theme']['table_row_padding']['text'] ?? '4px 7px';
 $form_table_label_background_color = $_SESSION['theme']['form_table_label_background_color']['text'] ?? '#e5e9f0';
 $form_table_label_border_radius = $_SESSION['theme']['form_table_label_border_radius']['text'] ?? null;
@@ -216,11 +221,9 @@ $message_alert_background_color = $_SESSION['theme']['message_alert_background_c
 $operator_panel_border_color = $_SESSION['theme']['operator_panel_border_color']['text'] ?? '#b9c5d8';
 $operator_panel_sub_background_color = $_SESSION['theme']['operator_panel_sub_background_color']['text'] ?? '#e5eaf5';
 $operator_panel_main_background_color = $_SESSION['theme']['operator_panel_main_background_color']['text'] ?? '#fff';
-$dashboard_detail_background_color_edge = $_SESSION['theme']['dashboard_detail_background_color_edge']['text'] ?? '#edf1f7';
-$dashboard_detail_background_color_center = $_SESSION['theme']['dashboard_detail_background_color_center']['text'] ?? '#f9fbfe';
 $dashboard_border_radius = $_SESSION['theme']['dashboard_border_radius']['text'] ?? '5px';
-$dashboard_border_color = $_SESSION['theme']['dashboard_border_color']['text'] ?? '#dbe0ea';
-$dashboard_border_color_hover = $_SESSION['theme']['dashboard_border_color_hover']['text'] ?? '#cbd3e1';
+$dashboard_border_color = $_SESSION['theme']['dashboard_border_color']['text'] ?? '#ffffff';
+$dashboard_border_color_hover = $_SESSION['theme']['dashboard_border_color_hover']['text'] ?? '#ffffff';
 $dashboard_label_text_color = $_SESSION['theme']['dashboard_label_text_color']['text'] ?? '#444';
 $dashboard_label_text_color_hover = $_SESSION['theme']['dashboard_label_text_color_hover']['text'] ?? '';
 $dashboard_label_text_size = $_SESSION['theme']['dashboard_label_text_size']['text'] ?? '13px';
@@ -240,12 +243,12 @@ $dashboard_number_title_text_color = $_SESSION['theme']['dashboard_number_title_
 $dashboard_number_title_text_size = $_SESSION['theme']['dashboard_number_title_text_size']['text'] ?? '14px';
 $dashboard_number_title_text_font = $_SESSION['theme']['dashboard_number_title_text_font']['text'] ?? 'Calibri, Candara, Segoe, "Segoe UI", Optima, Arial, sans-serif';
 $dashboard_number_title_text_shadow_color = $_SESSION['theme']['dashboard_number_title_text_shadow_color']['text'] ?? '#737983';
-$dashboard_detail_shadow_color = $_SESSION['theme']['dashboard_detail_shadow_color']['text'] ?? '#737983';
+$dashboard_detail_shadow_color = $_SESSION['theme']['dashboard_detail_shadow_color']['text'] ?? '#ffffff';
 $dashboard_detail_heading_text_size = $_SESSION['theme']['dashboard_detail_heading_text_size']['text'] ?? '11px';
-$dashboard_detail_background_color_edge = $_SESSION['theme']['dashboard_detail_background_color_edge']['text'] ?? '#edf1f7';
-$dashboard_detail_background_color_center = $_SESSION['theme']['dashboard_detail_background_color_center']['text'] ?? '#f9fbfe';
+$dashboard_detail_background_color_edge = $_SESSION['theme']['dashboard_detail_background_color_edge']['text'] ?? '#ffffff';
+$dashboard_detail_background_color_center = $_SESSION['theme']['dashboard_detail_background_color_center']['text'] ?? '#ffffff';
 $dashboard_detail_row_text_size = $_SESSION['theme']['dashboard_detail_row_text_size']['text'] ?? '11px';
-$dashboard_shadow_color = $_SESSION['theme']['dashboard_shadow_color']['text'] ?? '';
+$dashboard_shadow_color = $_SESSION['theme']['dashboard_shadow_color']['text'] ?? '#d0d8e5';
 $dashboard_footer_background_color = $_SESSION['theme']['dashboard_footer_background_color']['text'] ?? '#e5e9f0';
 $dashboard_footer_background_color_hover = $_SESSION['theme']['dashboard_footer_background_color_hover']['text'] ?? color_adjust($dashboard_footer_background_color, 0.02);
 $dashboard_footer_dots_color = $_SESSION['theme']['dashboard_footer_dots_color']['text'] ?? '#a4aebf';
@@ -256,7 +259,7 @@ $card_shadow_size = $_SESSION['theme']['card_shadow_size']['text'] ?? null;
 $card_background_color = $_SESSION['theme']['card_background_color']['text'] ?? null;
 $card_border_color = $_SESSION['theme']['card_border_color']['text'] ?? null;
 $card_border_size = $_SESSION['theme']['card_border_size']['text'] ?? null;
-$card_border_radius = $_SESSION['theme']['card_border_radius']['text'] ?? '0';
+$card_border_radius = $_SESSION['theme']['card_border_radius']['text'] ?? '5px';
 $action_bar_border_top = $_SESSION['theme']['action_bar_border_top']['text'] ?? 0;
 $action_bar_border_right = $_SESSION['theme']['action_bar_border_right']['text'] ?? 0;
 $action_bar_border_bottom = $_SESSION['theme']['action_bar_border_bottom']['text'] ?? 0;
@@ -650,7 +653,8 @@ else { //default: white
 		}
 
 	/* main menu item */
-	ul.navbar-nav > li.nav-item > a.nav-link {
+	ul.navbar-nav > li.nav-item > a.nav-link,
+	ul.navbar-nav.ml-auto > li.nav-item > a.nav-link {
 		font-family: <?=$menu_main_text_font?>;
 		font-size: <?=$menu_main_text_size?>;
 		color: <?=$menu_main_text_color?>;
@@ -734,14 +738,26 @@ else { //default: white
 		}
 
 	/* sub menu item icon */
-	ul.dropdown-menu > li.nav-item > a.nav-link > span.fas,
-	ul.dropdown-menu > li.nav-item > a.nav-link > span.fa-solid,
-	ul.dropdown-menu > li.nav-item > a.nav-link > span.fa-brands,
-	ul.dropdown-menu > li.nav-item > a.nav-link > span.fa-regular {
+	ul.dropdown-menu li.nav-item > a.nav-link > span.fas,
+	ul.dropdown-menu li.nav-item > a.nav-link > span.fa-solid,
+	ul.dropdown-menu li.nav-item > a.nav-link > span.fa-brands,
+	ul.dropdown-menu li.nav-item > a.nav-link > span.fa-regular,
+	div.menu_side_sub > a.menu_side_item_sub > span.fas,
+	div.menu_side_sub > a.menu_side_item_sub > span.fa-solid,
+	div.menu_side_sub > a.menu_side_item_sub > span.fa-brands,
+	div.menu_side_sub > a.menu_side_item_sub > span.fa-regular {
 		display: inline-block;
 		font-size: 8pt;
 		margin: 0 0 0 8px;
 		opacity: 0.30;
+		}
+
+	div.menu_side_sub > a.menu_side_item_sub > span.fas,
+	div.menu_side_sub > a.menu_side_item_sub > span.fa-solid,
+	div.menu_side_sub > a.menu_side_item_sub > span.fa-brands,
+	div.menu_side_sub > a.menu_side_item_sub > span.fa-regular {
+		float: right;
+		margin: 4px -3px 0 0;
 		}
 
 	/* header domain/user name */
@@ -753,17 +769,21 @@ else { //default: white
 		padding: 10px;
 		}
 
+	<?php if (!empty($header_user_color_hover)) { ?>
 	ul.navbar-nav > li.nav-item:hover > a.header_user,
 	ul.navbar-nav > li.nav-item:focus > a.header_user,
 	ul.navbar-nav > li.nav-item:active > a.header_user {
 		color: <?=$header_user_color_hover?>;
 		}
+	<?php } ?>
 
+	<?php if (!empty($header_domain_color_hover)) { ?>
 	ul.navbar-nav > li.nav-item:hover > a.header_domain,
 	ul.navbar-nav > li.nav-item:focus > a.header_domain,
 	ul.navbar-nav > li.nav-item:active > a.header_domain {
 		color: <?=$header_domain_color_hover?>;
 		}
+	<?php } ?>
 
 	/* logout icon */
 	a.logout_icon {
@@ -848,7 +868,7 @@ else { //default: white
 	a.menu_brand_image {
 		display: inline-block;
 		text-align: center;
-		padding: 15px 20px;
+		padding: 13px 20px;
 		}
 
 	a.menu_brand_image:hover {
@@ -872,15 +892,23 @@ else { //default: white
 		}
 
 	/* menu brand text */
-	a.menu_brand_text {
+	span.menu_brand_text {
 		display: inline-block;
-		padding: 10px 20px;
 		color: <?=$menu_brand_text_color?>;
 		font-weight: 600;
 		white-space: nowrap;
 		}
 
-	a.menu_brand_text:hover {
+	a.menu_brand_text {
+		display: inline-block;
+		padding: 15px 20px;
+		color: <?=$menu_brand_text_color?>;
+		font-weight: 600;
+		white-space: nowrap;
+		}
+
+	a.menu_brand_text:hover,
+	span.menu_brand_text:hover {
 		color: <?=$menu_brand_text_color_hover?>;
 		text-decoration: none;
 		}
@@ -892,7 +920,7 @@ else { //default: white
 		z-index: 99901;
 		top: 0;
 		padding: 0;
-		min-height: 75px;
+		min-height: 73px;
 		text-align: left;
 		<?php if ($menu_main_background_image) { ?>
 			background-image: url("<?=$menu_main_background_image?>");
@@ -1022,16 +1050,56 @@ else { //default: white
 
 /* BODY/HEADER BAR *****************************************************************/
 
-	<?php if ($menu_style == 'side') { ?>
+	<?php if ($menu_style == 'side' || $menu_style == 'fixed') { ?>
 		div#body_header {
 			position: relative;
 			z-index: 1;
-			padding: 10px 10px 15px 10px;
-			height: 50px;
+			padding: 17px 10px 13px 10px;
+			height: 60px;
 			background-color: <?=$body_header_background_color?>;
 			-webkit-box-shadow: 0 2px <?=$body_header_shadow_size ?? '7px'?> <?=$body_header_shadow_color?>;
 			-moz-box-shadow: 0 2px <?=$body_header_shadow_size ?? '7px'?> <?=$body_header_shadow_color?>;
 			box-shadow: 0 2px <?=$body_header_shadow_size ?? '7px'?> <?=$body_header_shadow_color?>;
+			}
+
+		div#body_header a {
+			color: <?=$body_header_text_link_color?>;
+			}
+
+		div#body_header a:hover {
+			color: <?=$body_header_text_link_color_hover?>;
+			text-decoration: none;
+			}
+
+		div#body_header_user_menu {
+			z-index: 6;
+			display: none;
+			position: absolute;
+			top: 50px;
+			/* right: specified in /resources/classes/menu.php */
+			padding: 15px;
+			background-color: <?=$body_header_background_color?>;
+			border: 1px solid <?=color_adjust($body_header_shadow_color, 0.05)?>;
+			<?php $br = format_border_radius($dashboard_border_radius, '5px'); ?>
+			-webkit-border-radius: <?php echo $br['tl']['n'].$br['tl']['u']; ?> <?php echo $br['tr']['n'].$br['tr']['u']; ?> <?php echo $br['br']['n'].$br['br']['u']; ?> <?php echo $br['bl']['n'].$br['bl']['u']; ?>;
+			-moz-border-radius: <?php echo $br['tl']['n'].$br['tl']['u']; ?> <?php echo $br['tr']['n'].$br['tr']['u']; ?> <?php echo $br['br']['n'].$br['br']['u']; ?> <?php echo $br['bl']['n'].$br['bl']['u']; ?>;
+			border-radius: <?php echo $br['tl']['n'].$br['tl']['u']; ?> <?php echo $br['tr']['n'].$br['tr']['u']; ?> <?php echo $br['br']['n'].$br['br']['u']; ?> <?php echo $br['bl']['n'].$br['bl']['u']; ?>;
+			<?php unset($br); ?>
+			-webkit-box-shadow: 0 2px <?=$body_header_shadow_size ?? '7px'?> <?=$body_header_shadow_color?>;
+			-moz-box-shadow: 0 2px <?=$body_header_shadow_size ?? '7px'?> <?=$body_header_shadow_color?>;
+			box-shadow: 0 2px <?=$body_header_shadow_size ?? '7px'?> <?=$body_header_shadow_color?>;
+			}
+
+		@media (max-width: 575.98px) {
+			div#body_header_user_menu {
+				width: calc(100% - 20px);
+				/* right: specified in /resources/classes/menu.php */
+				}
+			}
+
+		div#body_header_user_menu a {
+			font-size: 90%;
+			text-decoration: none;
 			}
 	<?php } else { ?>
 		div#body_header {
@@ -1046,7 +1114,7 @@ else { //default: white
 
 	div#body_header_brand_image {
 		display: inline-block;
-		margin-left: 10px;
+		margin-left: 8px;
 		}
 
 	div#body_header_brand_image > a:hover {
@@ -1420,7 +1488,7 @@ else { //default: white
 
 	#domains_container {
 		z-index: 99990;
-		position: absolute;
+		position: fixed;
 		right: 0;
 		top: 0;
 		bottom: 0;
@@ -1715,6 +1783,7 @@ else { //default: white
 	input[type=number].formfld,
 	input[type=url].formfld,
 	input[type=password].formfld,
+	input[type=email].formfld,
 	label.formfld {
 		font-family: <?=$input_text_font?>;
 		font-size: <?=$input_text_size?>;
@@ -1752,11 +1821,13 @@ else { //default: white
 	input[type=text].txt,
 	input[type=number].txt,
 	input[type=password].txt,
+	input[type=email].txt,
 	textarea.formfld,
 	input[type=text].formfld,
 	input[type=number].formfld,
 	input[type=url].formfld,
-	input[type=password].formfld {
+	input[type=password].formfld,
+	input[type=email].formfld {
 		transition: width 0.25s;
 		-moz-transition: width 0.25s;
 		-webkit-transition: width 0.25s;
@@ -1779,12 +1850,14 @@ else { //default: white
 	input[type=text].txt:hover,
 	input[type=number].txt:hover,
 	input[type=password].txt:hover,
+	input[type=email].txt:hover,
 	label.txt:hover,
 	textarea.formfld:hover,
 	input[type=text].formfld:hover,
 	input[type=number].formfld:hover,
 	input[type=url].formfld:hover,
 	input[type=password].formfld:hover,
+	input[type=email].formfld:hover,
 	label.formfld:hover {
 		border-color: <?=$input_border_color_hover?>;
 		}
@@ -1793,12 +1866,14 @@ else { //default: white
 	input[type=text].txt:focus,
 	input[type=number].txt:focus,
 	input[type=password].txt:focus,
+	input[type=email].txt:focus,
 	label.txt:focus,
 	textarea.formfld:focus,
 	input[type=text].formfld:focus,
 	input[type=number].formfld:focus,
 	input[type=url].formfld:focus,
 	input[type=password].formfld:focus,
+	input[type=email].formfld:focus,
 	label.formfld:focus {
 		border-color: <?=$input_border_color_focus?>;
 		/* first clear */
@@ -1974,6 +2049,7 @@ else { //default: white
 		-webkit-box-shadow: 0 0 3px 0px rgba(<?=hex_to_rgb($audio_player_indicator_color,',',true,0.8)?>);
 		-moz-box-shadow: 0 0 3px 0px rgba(<?=hex_to_rgb($audio_player_indicator_color,',',true,0.8)?>);
 		box-shadow: 0 0 3px 0px rgba(<?=hex_to_rgb($audio_player_indicator_color,',',true,0.8)?>);
+		pointer-events: none;
 		}
 
 	td.vtable.playback_progress_bar_background,
@@ -1988,8 +2064,8 @@ else { //default: white
 		background-image: linear-gradient(to bottom, rgba(0,0,0,0.10) 0%, transparent 100%);
 		overflow: hidden;
 		<?php if ($audio_player_waveform_enabled === 'true') { ?>
-			padding-bottom: 3px;
-			background-size: 100% 100%;
+			padding-bottom: 0px;
+			background-size: 100% 100% !important;
 			background-repeat: no-repeat;
 			cursor: pointer;
 		<?php } ?>
@@ -2180,7 +2256,7 @@ else { //default: white
 
 	table.tr_hover tr:hover td,
 	table.tr_hover tr:hover td a {
-		color: <?=$text_link_color_hover?>;
+		color: <?=$table_row_text_link_color_hover?>;
 		cursor: pointer;
 		}
 
@@ -2263,7 +2339,7 @@ else { //default: white
 		vertical-align: middle;
 		color: <?=$form_table_field_text_color?>;
 		font-family: <?=$form_table_field_text_font?>;
-		font-size: <?$form_table_field_text_size?>;
+		font-size: <?=$form_table_field_text_size?>;
 		}
 
 	/* form: heading/row format */
@@ -2367,7 +2443,7 @@ else { //default: white
 		background: <?=$table_row_background_color_medium?>;
 		color: <?=$table_row_text_color?>;
 		font-family: <?=$table_row_text_font?>;
-		font-size: <?$table_row_text_size?>;
+		font-size: <?=$table_row_text_size?>;
 		text-align: left;
 		padding: 4px 7px;
 		}
@@ -2386,37 +2462,41 @@ else { //default: white
 	.message_text {
 		z-index: 99999;
 		margin: 0 auto;
-		padding: 15px;
 		text-align: center;
 		font-family: arial, san-serif;
 		font-size: 10pt;
 		display: block;
 		color: <?=$message_default_color?>;
-		background: <?-$message_default_background_color?>;
+		background: <?=$message_default_background_color?>;
 		box-shadow: inset 0px 7px 8px -10px <?=$message_default_color?>;
-		border-bottom: solid 1px <?=$message_default_color?>;
 		opacity: 0;
+		<?php
+		if ($menu_style == 'side') {
+			echo "padding: 20px;\n";
+			echo "min-height: 60px;\n";
+		}
+		else {
+			echo "padding: 15px;\n";
+		}
+		?>
 		}
 
 	.message_mood_positive {
 		color: <?=$message_positive_color?>;
 		background: <?=$message_positive_background_color?>;
 		box-shadow: inset 0px 7px 8px -10px <?=$message_positive_color?>;
-		border-bottom: solid 1px <?=$message_positive_color?>;
 		}
 
 	.message_mood_negative {
 		color: <?=$message_negative_color?>;
 		background: <?=$message_negative_background_color?>;
 		box-shadow: inset 0px 7px 8px -10px <?=$message_negative_color?>;
-		border-bottom: solid 1px <?=$message_negative_color?>;
 		}
 
 	.message_mood_alert {
 		color: <?=$message_alert_color?>;
 		background: <?=$message_alert_background_color?>;
 		box-shadow: inset 0px 7px 8px -10px <?=$message_alert_color?>;
-		border-bottom: solid 1px <?=$message_alert_color?>;
 		}
 
 /* OPERATOR PANEL ****************************************************************/
@@ -2619,7 +2699,6 @@ else { //default: white
 /* CARD **********************************************************************/
 
 	div.card {
-		overflow: auto;
 		margin-bottom: 15px;
 		<?php
 		if (isset($card_border_size) || !empty($card_border_color) || !empty($card_background_color) || !empty($card_shadow_color)) {
@@ -2630,9 +2709,9 @@ else { //default: white
 				echo "border: none !important;\n";
 			}
 			if (isset($card_border_radius) || (isset($card_border_size) || !empty($card_border_color))) {
-				echo "-webkit-border-radius: ".($card_border_radius ?? '0')." !important;\n";
-				echo "-moz-border-radius: ".($card_border_radius ?? '0')." !important;\n";
-				echo "border-radius: ".($card_border_radius ?? '0')." !important;\n";
+				echo "-webkit-border-radius: ".$card_border_radius." !important;\n";
+				echo "-moz-border-radius: ".$card_border_radius." !important;\n";
+				echo "border-radius: ".$card_border_radius." !important;\n";
 			}
 			echo "padding: ".$card_padding.";\n";
 			if (!empty($card_background_color)) {
@@ -2847,7 +2926,7 @@ else { //default: white
 	th.hud_heading {
 		text-align: left;
 		font-size: <?=$dashboard_detail_heading_text_size?>;
-		font-family: <?=$table_heading_text_font?>
+		font-family: <?=$table_heading_text_font?>;
 		color: <?=$table_heading_text_color?>;
 		padding-top: 3px;
 		<?php
@@ -3082,21 +3161,19 @@ else { //default: white
 /* LIST ACTION BAR *************************************************************/
 
 	div.action_bar {
-		position: -webkit-sticky;
-		position: sticky;
 		z-index: 5;
 		<?php
 		switch ($menu_style) {
 			case 'side':
 				$action_bar_top = '0';
 				break;
+			case 'fixed':
+				$action_bar_top = '49px';
+				break;
 			case 'inline':
 			case 'static':
 				$action_bar_top = '-1px';
 				break;
-			case 'fixed':
-			default:
-				$action_bar_top = '49px';
 		}
 		?>
 		top: <?php echo $action_bar_top; ?>;
@@ -3108,28 +3185,62 @@ else { //default: white
 		border-radius: <?=$action_bar_border_radius?>;
 		background: <?=$action_bar_background?>;
 		box-shadow: <?=$action_bar_shadow?>;
-		padding: 10px;
-		margin: -10px -10px 10px -10px;
+		<?php
+		switch ($menu_style) {
+			case 'side':
+				echo "position: -webkit-sticky;\n";
+				echo "position: sticky;\n";
+				echo "padding: 15px 20px 15px 20px;\n";
+				echo "margin: -10px -20px 10px -20px;\n";
+				echo "min-height: 60px;\n";
+				break;
+			case 'fixed';
+				echo "position: -webkit-sticky;\n";
+				echo "position: sticky;\n";
+				echo "padding: 10px 30px 10px 30px;\n";
+				echo "margin: -10px -30px 10px -30px;\n";
+				break;
+			case 'static':
+			case 'inline':
+				echo "padding: 15px 20px 15px 20px;\n";
+				echo "margin: -10px -20px 10px -20px;\n";
+				break;
+		}
+		?>
 		-webkit-transition: all .2s ease;
 		-moz-transition: all .2s ease;
 		transition: all .2s ease;
 		}
 
-	div.action_bar.scroll {
-		border-top: <?=$action_bar_border_top_scroll?>;
-		border-right: <?=$action_bar_border_right_scroll?>;
-		border-bottom: <?=$action_bar_border_bottom_scroll?>;
-		border-left: <?=$action_bar_border_left_scroll?>;
-		border-radius: <?=$action_bar_border_radius_scroll?>;
-		background: <?=$action_bar_background_scroll?>;
-		box-shadow: <?=$action_bar_shadow_scroll?>;
-		}
+	<?php
+	if ($menu_style == 'side' || $menu_style == 'fixed') {
+		?>
+		div.action_bar.scroll {
+			border-top: <?=$action_bar_border_top_scroll?>;
+			border-right: <?=$action_bar_border_right_scroll?>;
+			border-bottom: <?=$action_bar_border_bottom_scroll?>;
+			border-left: <?=$action_bar_border_left_scroll?>;
+			border-radius: <?=$action_bar_border_radius_scroll?>;
+			background: <?=$action_bar_background_scroll?>;
+			box-shadow: <?=$action_bar_shadow_scroll?>;
+			}
+		<?php
+	}
+	?>
 
 	div.action_bar.sub {
 		position: static;
 		}
 
 	div.action_bar > div.heading {
+		<?php
+		if ($menu_style == 'side') {
+			echo "padding-top: 2px;\n";
+		}
+		else if ($menu_style == 'fixed') {
+			echo "padding-top: 4px;\n";
+		}
+		?>
 		float: left;
 		}
 
@@ -3189,9 +3300,18 @@ else { //default: white
 		cursor: default;
 		}
 
+	.list tr td a,
+	.list tr td button.btn.btn-link {
+		color: <?=$table_row_text_link_color?>;
+		}
+
+	.list tr td button.btn.btn-link:hover {
+		color: <?=$table_row_text_link_color_hover?>;
+		}
+
 	.list tr:hover td:not(.no-link),
 	.list tr:hover td:not(.no-link) a {
-		color: <?=$text_link_color_hover?>;
+		color: <?=$table_row_text_link_color_hover?>;
 		cursor: pointer;
 		}
 
@@ -3210,11 +3330,11 @@ else { //default: white
 		}
 
 	.list-header > th > a.default-color {
-		color: <?=$text_link_color?>;
+		color: <?=$table_row_text_link_color?>;
 		}
 
 	.list-header > th > a.default-color:hover {
-		color: <?=$text_link_color_hover?>;
+		color: <?=$table_row_text_link_color_hover?>;
 		}
 
 	.list-row:nth-child(odd) > :not(.action-button) {
@@ -3234,12 +3354,20 @@ else { //default: white
 		vertical-align: middle;
 		}
 
+	<?php if (!empty($table_row_background_color_hover)) { ?>
+		.list-row:hover > td,
+		.list-row:nth-child(odd):hover > :not(.action-button),
+		.list-row:nth-child(even):hover > :not(.action-button) {
+			background: <?=$table_row_background_color_hover?>;
+			}
+	<?php } ?>
+
 	.list-row > :not(.checkbox) {
 		padding: <?=$table_row_padding?>;
 		}
 
 	.list-row > td.description {
-		background: <?=$table_row_background_color_medium?> !important;
+		/*background: <?=$table_row_background_color_medium?> !important;*/
 		}
 
 	.list-header > .checkbox,
@@ -3305,7 +3433,7 @@ else { //default: white
 	.list-status-active {
 		width: 10px;
 		height: 10px;
-		background-color: green;
+		background-color: #03C04A;
 		border-radius: 50%;
 		display: inline-block;
 	}
@@ -3314,6 +3442,14 @@ else { //default: white
 		width: 10px;
 		height: 10px;
 		background-color: #ccc;
+		border-radius: 50%;
+		display: inline-block;
+	}
+
+	.list-status-failed {
+		width: 10px;
+		height: 10px;
+		background-color: #ea4c46;
 		border-radius: 50%;
 		display: inline-block;
 	}
@@ -3363,6 +3499,7 @@ else { //default: white
 	.pct-90 { width: 90%; }
 	.pct-95 { width: 95%; }
 	.pct-100 { width: 100%; }
+
 
 /* SIDE PADDING & MARGIN HELPERS **********************************************************************/
 

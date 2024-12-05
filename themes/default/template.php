@@ -224,55 +224,6 @@
 						{literal}
 					});
 				}
-
-				function menu_side_state_set(state) {
-					var user_setting_set_path = '{/literal}{$project_path}{literal}/core/user_settings/user_setting_set.php?category=theme&subcategory=menu_side_state&name=text&value='+state;
-					var xhr = new XMLHttpRequest();
-					xhr.open('GET', user_setting_set_path);
-					xhr.send(null);
-					xhr.onreadystatechange = function () {
-						var setting_modified;
-						if (xhr.readyState === 4) {
-							if (xhr.status === 200) {
-								setting_modified = xhr.responseText;
-								if (setting_modified == 'true') {
-									document.getElementById('menu_side_state_set_expanded').style.display = state == 'expanded' ? 'none' : 'block';
-									document.getElementById('menu_side_state_set_contracted').style.display = state == 'contracted' ? 'none' : 'block';
-									{/literal}
-									{if $menu_side_state == 'hidden'}
-										{literal}
-										document.getElementById('menu_side_state_hidden_button').style.display='none';
-										{/literal}
-									{/if}
-									{literal}
-									if (state == 'expanded') {
-										if ($(window).width() >= 576) {
-											$('#content_container').animate({ width: $(window).width() - {/literal}{$settings.theme.menu_side_width_expanded}{literal} }, 250);
-										}
-										else {
-											$('#menu_side_container').animate({ width: $(window).width() }, 180);
-										}
-										document.getElementById('menu_side_state_current').value = 'expanded';
-										display_message("{/literal}{$text.theme_message_menu_expanded}{literal}", 'positive', 1000);
-									}
-									else {
-										menu_side_contract();
-										if ($(window).width() >= 576) {
-											$('#content_container').animate({ width: $(window).width() - {/literal}{$settings.theme.menu_side_width_contracted}{literal} }, 250);
-										}
-										menu_side_state_current = 'contracted';
-										document.getElementById('menu_side_state_current').value = 'contracted';
-										display_message("{/literal}{$text.theme_message_menu_contracted}{literal}", 'positive', 1000);
-									}
-								}
-								else if (setting_modified == 'deleted') {
-									display_message("{/literal}{$text.theme_message_menu_reset}{literal}", 'positive', 1000);
-									document.location.reload();
-								}
-							}
-						}
-					}
-				}
 				{/literal}
 		{/if}
 
@@ -293,11 +244,11 @@
 		//domain selector controls
 			{if $domain_selector_enabled}
 				{literal}
-				$('.domain_selector_domain').on('click', function() { show_domains(); });
-				$('#header_domain_selector_domain').on('click', function() { show_domains(); });
+				$('.header_domain_selector_domain').on('click', function() { event.preventDefault(); show_domains(); });
 				$('#domains_hide').on('click', function() { hide_domains(); });
 
 				function show_domains() {
+					$('#body_header_user_menu').fadeOut(200);
 					search_domains('domains_list');
 
 					$('#domains_visible').val(1);
@@ -307,7 +258,6 @@
 						$('.navbar').css('margin-right',scrollbar_width); //adjust navbar margin to compensate
 						$('#domains_container').css('right',-scrollbar_width); //domain container right position to compensate
 					}
-					$(document).scrollTop(0);
 					$('#domains_container').show();
 					$('#domains_block').animate({marginRight: '+=300'}, 400, function() {
 						$('#domains_search').trigger('focus');
@@ -737,6 +687,27 @@
 				{/literal}
 			{/if}
 
+		//side/fixed menu: hide an open user menu in the body header or menu on scroll
+			{if $settings.theme.menu_style == 'side' || $settings.theme.menu_style == 'fixed' }
+				{literal}
+				$(window).on('scroll', function() {
+					$('#body_header_user_menu').fadeOut(200);
+				});
+				$('div#main_content').on('click', function() {
+					$('#body_header_user_menu').fadeOut(200);
+				});
+				{/literal}
+			{/if}
+
+		//create function to mimic toggling fade and slide at the same time
+			{literal}
+			(function($){
+				$.fn.toggleFadeSlide = function(speed = 200, easing, callback){
+					return this.animate({opacity: 'toggle', height: 'toggle'}, speed, easing, callback);
+				};
+			})(jQuery);
+			{/literal}
+
 	{literal}
 	}); //document ready end
 	{/literal}
@@ -831,9 +802,9 @@
 			if (recording_progress) {
 				recording_progress.style.marginLeft = value + '%';
 			}
-			if (recording_audio != null && parseInt(recording_audio.duration) > 30) { //seconds
-				clearInterval(audio_clock);
-			}
+			// if (recording_audio != null && parseInt(recording_audio.duration) > 30) { //seconds
+			// 	clearInterval(audio_clock);
+			// }
 		}
 
 		function recording_fast_forward() {
@@ -850,12 +821,26 @@
 			}
 		}
 
+		function recording_seek(event, player_id) {
+			if (recording_audio) {
+				if (document.getElementById('playback_progress_bar_background_' + player_id)) {
+					audio_player = document.getElementById('playback_progress_bar_background_' + player_id);
+				}
+				else if (document.getElementById('recording_progress_bar_' + player_id)) {
+					audio_player = document.getElementById('recording_progress_bar_' + player_id);
+				}
+				recording_audio.currentTime = (event.offsetX / audio_player.offsetWidth) * recording_audio.duration;
+				update_progress(recording_id_playing);
+				document.getElementById('recording_button_' + player_id).focus();
+			}
+		}
+
 		{/literal}
 
 	//handle action bar style on scroll
 		{literal}
 		window.addEventListener('scroll', function(){
-			action_bar_scroll('action_bar', 20);
+			action_bar_scroll('action_bar', {/literal}{if $settings.theme.menu_style == 'side'}60{else}20{/if}{literal});
 		}, false);
 		function action_bar_scroll(action_bar_id, scroll_position, function_sticky, function_inline) {
 			if (document.getElementById(action_bar_id)) {
@@ -1176,9 +1161,9 @@
 <body>
 
 	{*//video background *}
-	{if !empty($settings.theme.background_video)}
+	{if !empty({$background_video})}
 		<video id="background-video" autoplay muted poster="" disablePictureInPicture="true" onloadstart="this.playbackRate = 1; this.pause();">
-			<source src="{$settings.theme.background_video}" type="video/mp4">
+			<source src="{$background_video}" type="video/mp4">
 		</video>
 	{/if}
 

@@ -528,9 +528,6 @@ function toggle_grid_row_end_all() {
 		$dashboard_number_text_color = $row['dashboard_number_text_color'] ?? $settings->get('theme', 'dashboard_number_text_color');
 		$dashboard_details_state = $row['dashboard_details_state'] ?? "expanded";
 		$dashboard_row_span = $row['dashboard_row_span'] ?? 2;
-		if ($dashboard_details_state == "expanded") {
-			$dashboard_row_span += 3;
-		}
 
 		//define the regex patterns
 		$uuid_pattern = '/[^-A-Fa-f0-9]/';
@@ -565,7 +562,9 @@ function toggle_grid_row_end_all() {
 		$path_array = glob(dirname(__DIR__, 2).'/*/'.$application_name.'/resources/dashboard/'.$widget_name.'.php');
 
 		echo "<div class='widget' style='grid-row-end: span ".$dashboard_row_span.";' data-state='".$dashboard_details_state."' id='".$dashboard_name_id."' draggable='false'>\n";
-		include $path_array[0];
+		if (file_exists($path_array[0])) {
+			include $path_array[0];
+		}
 		echo "</div>\n";
 
 		$x++;

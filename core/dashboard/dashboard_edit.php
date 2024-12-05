@@ -560,7 +560,7 @@
 	echo "	<div style='clear: both;'></div>\n";
 	echo "</div>\n";
 	//echo $text['title_description-dashboard']."\n";
-	echo "<br /><br />\n";
+	//echo "<br /><br />\n";
 
 	if (!empty($action) && $action == 'update') {
 		if (permission_exists('dashboard_add')) {
@@ -571,6 +571,7 @@
 		}
 	}
 
+	echo "<div class='card'>\n";
 	echo "<table width='100%' border='0' cellpadding='0' cellspacing='0'>\n";
 
 	echo "<tr>\n";
@@ -601,11 +602,8 @@
 	echo "</td>\n";
 	echo "</tr>\n";
 
-	if (
-		$action == "add" ||
-		$dashboard_path == "dashboard/icon"
-		) {
-		echo "	<tr class='type_icon' ".($dashboard_path != 'dashboard/icon' ? "style='display: none;'" : null).">";
+	if ($action == "add" || $dashboard_path == "dashboard/icon" || $dashboard_chart_type == "icon") {
+		echo "	<tr class='type_icon'>"; // ".(($dashboard_path != 'dashboard/icon' || $dashboard_chart_type == "icon") ? "style='display: none;'" : null)."
 		echo "		<td class='vncell'>".$text['label-icon']."</td>";
 		echo "		<td class='vtable' style='vertical-align: bottom;'>";
 		if (file_exists($_SERVER["PROJECT_ROOT"].'/resources/fontawesome/fa_icons.php')) {
@@ -801,11 +799,14 @@
 		$dashboard_path == "xml_cdr/recent_calls" ||
 		$dashboard_path == "system/system_status" ||
 		$dashboard_path == "system/system_cpu_status" ||
+		$dashboard_path == "system/system_disk_usage" ||
 		$dashboard_path == "system/system_counts" ||
 		$dashboard_path == "switch/switch_status" ||
 		$dashboard_path == "domain_limits/domain_limits" ||
 		$dashboard_path == "call_forward/call_forward" ||
 		$dashboard_path == "ring_groups/ring_group_forward" ||
+		$dashboard_path == "registrations/registrations" ||
+		$dashboard_path == "domains/domains" ||
 		$dashboard_path == "extensions/caller_id" ||
 		$dashboard_path == "maintenance/maintenance"
 		) {
@@ -816,7 +817,11 @@
 		echo "<td class='vtable' style='position: relative;' align='left'>\n";
 		echo "	<select name='dashboard_chart_type' class='formfld'>\n";
 		echo "		<option value='doughnut'>".$text['label-doughnut']."</option>\n";
+		echo "		<option value='icon' ".(!empty($dashboard_chart_type) && $dashboard_chart_type == "icon" ? "selected='selected'" : null).">".$text['label-icon']."</option>\n";
 		echo "		<option value='number' ".(!empty($dashboard_chart_type) && $dashboard_chart_type == "number" ? "selected='selected'" : null).">".$text['label-number']."</option>\n";
+		if ($dashboard_path == "system/system_status") {
+			echo "		<option value='progress_bar' ".(!empty($dashboard_chart_type) && $dashboard_chart_type == "progress_bar" ? "selected='selected'" : null).">".$text['label-progress_bar']."</option>\n";
+		}
 		echo "	</select>\n";
 		echo "<br />\n";
 		echo $text['description-dashboard_chart_type']."\n";
@@ -1175,6 +1180,7 @@
 	echo "</tr>\n";
 
 	echo "</table>";
+	echo "</div>\n";
 	echo "<br /><br />";
 
 	echo "<input type='hidden' name='".$token['name']."' value='".$token['hash']."'>\n";

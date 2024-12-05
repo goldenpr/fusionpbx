@@ -42,6 +42,9 @@
 //connect to database
 	$database = database::new();
 
+//create the settings object
+	$settings = new settings(['database' => $database, 'domain_uuid' => $_SESSION['domain_uuid'] ?? '', 'user_uuid' => $_SESSION['user_uuid'] ?? '']);
+
 //add multi-lingual support
 	$language = new text;
 	$text = $language->get();
@@ -58,6 +61,7 @@
 	$ring_group_forward_destination = '';
 	$ring_group_forward_toll_allow = '';
 	$ring_group_description = '';
+	$ring_group_ringback = $settings->get('ring_group', 'default_ringback', '');
 	$onkeyup = '';
 
 //initialize the destinations object
@@ -110,7 +114,7 @@
 			$array['ring_group_users'][0]['user_uuid'] = $user_uuid;
 
 			//grant temporary permissions
-			$p = new permissions;
+			$p = permissions::new();
 			$p->add('ring_group_user_delete', 'temp');
 
 			//execute delete
@@ -186,6 +190,7 @@
 			$ring_group_cid_number_prefix = $_POST["ring_group_cid_number_prefix"] ?? null;
 			$ring_group_distinctive_ring = $_POST["ring_group_distinctive_ring"];
 			$ring_group_ringback = $_POST["ring_group_ringback"];
+			$ring_group_call_screen_enabled = $_POST["ring_group_call_screen_enabled"];
 			$ring_group_call_forward_enabled = $_POST["ring_group_call_forward_enabled"];
 			$ring_group_follow_me_enabled = $_POST["ring_group_follow_me_enabled"];
 			$ring_group_missed_call_app = $_POST["ring_group_missed_call_app"];
@@ -247,7 +252,7 @@
 		$array['ring_group_users'][0]['user_uuid'] = $user_uuid;
 
 		//grant temporary permissions
-		$p = new permissions;
+		$p = permissions::new();
 		$p->add('ring_group_user_add', 'temp');
 
 		//execute delete
@@ -375,6 +380,9 @@
 			}
 			$array["ring_groups"][0]["ring_group_distinctive_ring"] = $ring_group_distinctive_ring;
 			$array["ring_groups"][0]["ring_group_ringback"] = $ring_group_ringback;
+			if (permission_exists('ring_group_call_screen_enabled')) {
+				$array["ring_groups"][0]["ring_group_call_screen_enabled"] = $ring_group_call_screen_enabled;
+			}
 			$array["ring_groups"][0]["ring_group_call_forward_enabled"] = $ring_group_call_forward_enabled;
 			$array["ring_groups"][0]["ring_group_follow_me_enabled"] = $ring_group_follow_me_enabled;
 			if (permission_exists('ring_group_missed_call')) {
@@ -484,7 +492,7 @@
 			$array["dialplans"][0]["app_uuid"] = "1d61fb65-1eec-bc73-a6ee-a6203b4fe6f2";
 
 		//add the dialplan permission
-			$p = new permissions;
+			$p = permissions::new();
 			$p->add("dialplan_add", "temp");
 			$p->add("dialplan_edit", "temp");
 
@@ -559,6 +567,7 @@
 			$ring_group_cid_number_prefix = $row["ring_group_cid_number_prefix"];
 			$ring_group_distinctive_ring = $row["ring_group_distinctive_ring"];
 			$ring_group_ringback = $row["ring_group_ringback"];
+			$ring_group_call_screen_enabled = $row["ring_group_call_screen_enabled"];
 			$ring_group_call_forward_enabled = $row["ring_group_call_forward_enabled"];
 			$ring_group_follow_me_enabled = $row["ring_group_follow_me_enabled"];
 			$ring_group_missed_call_app = $row["ring_group_missed_call_app"];
@@ -1138,6 +1147,33 @@
 	echo "			<br />\n";
 	echo "		</td>";
 	echo "	</tr>";
+
+	if (permission_exists('ring_group_call_screen_enabled')) {
+		echo "<tr>\n";
+		echo "<td class='vncell' valign='top' align='left' nowrap='nowrap'>\n";
+		echo "    ".$text['label-ring_group_call_screen_enabled']."\n";
+		echo "</td>\n";
+		echo "<td class='vtable' align='left'>\n";
+		echo "    <select class='formfld' name='ring_group_call_screen_enabled'>\n";
+		echo "    <option value=''></option>\n";
+		if ($ring_group_call_screen_enabled == "true") {
+			echo "    <option value='true' selected='selected'>".$text['label-true']."</option>\n";
+		}
+		else {
+			echo "    <option value='true'>".$text['label-true']."</option>\n";
+		}
+		if ($ring_group_call_screen_enabled == "false") {
+			echo "    <option value='false' selected='selected'>".$text['label-false']."</option>\n";
+		}
+		else {
+			echo "    <option value='false'>".$text['label-false']."</option>\n";
+		}
+		echo "    </select>\n";
+		echo "<br />\n";
+		echo $text['description-ring_group_call_screen_enabled']."\n";
+		echo "</td>\n";
+		echo "</tr>\n";
+	}
 
 	echo "<tr>\n";
 	echo "<td class='vncell' valign='top' align='left' nowrap='nowrap'>\n";

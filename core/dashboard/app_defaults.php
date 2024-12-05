@@ -98,7 +98,7 @@ if ($domains_processed == 1) {
 		}
 
 	//add the temporary permissions
-		$p = new permissions;
+		$p = permissions::new();
 		$p->add('dashboard_add', 'temp');
 		$p->add('dashboard_group_add', 'temp');
 
@@ -123,7 +123,6 @@ if ($domains_processed == 1) {
 
 	//execute array of queries
 		foreach ($queries as $sql) {
-			$database = new database;
 			$database->execute($sql);
 		}
 		unset($queries, $sql);

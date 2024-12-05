@@ -261,7 +261,7 @@
 			$array['extension_users'][0]['user_uuid'] = $user_uuid;
 
 		//add temporary permission
-			$p = new permissions;
+			$p = permissions::new();
 			$p->add('extension_user_delete', 'temp');
 
 		//save the array
@@ -288,7 +288,7 @@
 				$array['device_lines'][0]['device_line_uuid'] = $device_line_uuid;
 
 			//add temporary permission
-				$p = new permissions;
+				$p = permissions::new();
 				$p->add('device_line_delete', 'temp');
 
 			//save the array
@@ -1766,13 +1766,13 @@
 		echo "    ".$text['label-voicemail_mail_to']."\n";
 		echo "</td>\n";
 		echo "<td class='vtable' align='left'>\n";
-		echo "    <input class='formfld' type='text' name='voicemail_mail_to' maxlength='255' value=\"".escape($voicemail_mail_to ?? '')."\">\n";
+		echo "    <input class='formfld' type='text' name='voicemail_mail_to' maxlength='1024' value=\"".escape($voicemail_mail_to ?? '')."\">\n";
 		echo "<br />\n";
 		echo $text['description-voicemail_mail_to']."\n";
 		echo "</td>\n";
 		echo "</tr>\n";
 
-		if (permission_exists('voicemail_transcription_enabled') && ($_SESSION['voicemail']['transcribe_enabled']['boolean'] ?? '') == "true") {
+		if (permission_exists('voicemail_transcription_enabled') && ($_SESSION['transcribe']['enabled']['boolean'] ?? '') == "true") {
 			echo "<tr>\n";
 			echo "<td class='vncell' valign='top' align='left' nowrap='nowrap'>\n";
 			echo "	".$text['label-voicemail_transcription_enabled']."\n";
