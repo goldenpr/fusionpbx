@@ -193,7 +193,7 @@
 	$apps[$x]['menu'][$y]['uuid'] = "e1170753-e1cb-44d6-90cc-6cf4d242092a";
 	$apps[$x]['menu'][$y]['parent_uuid'] = "";
 	$apps[$x]['menu'][$y]['category'] = "internal";
-	$apps[$x]['menu'][$y]['icon'] = "fa-scroll";
+	$apps[$x]['menu'][$y]['icon'] = "fa-solid fa-file-lines";
 	$apps[$x]['menu'][$y]['path'] = "";
 	$apps[$x]['menu'][$y]['order'] = "27";
 	$apps[$x]['menu'][$y]['groups'][] = "admin";
