@@ -210,6 +210,19 @@
 				}
 				unset($sql, $parameters, $num_rows);
 			}
+			
+		//check for transfred
+			if ($destination_type == 'inbound' && $destination_number != $db_destination_number && $_SESSION['destinations']['unique']['boolean'] == 'true') {
+				$sql = "select count(*) from v_available_destinations ";
+				$sql .= "where (destination_number = :destination_number) ";
+				$sql .= "and destination_used = 'transfared' ";
+				$parameters['destination_number'] = $destination_number;
+				$num_rows = $database->select($sql, $parameters, 'column');
+				if ($num_rows > 0) {
+					$msg .= $text['message-transfred']."<br>\n";
+				}
+				unset($sql, $parameters, $num_rows);
+			}
 
 		//show the message
 			if (!empty($msg) && empty($_POST["persistformvar"])) {
@@ -390,6 +403,7 @@
 
 				//add the destinations and asscociated dialplans
 					$x = 0;
+					$old_destination = $destination_number;
 					if (!empty($destination_numbers)) {
 						foreach($destination_numbers as $destination_number) {
 
@@ -1052,6 +1066,40 @@
 										$parameters['dialplan_uuid'] = $dialplan_uuid;
 										$database->execute($sql, $parameters);
 										unset($sql, $parameters);
+										
+									//update the previous details
+									if ($action == "update"){
+										$sql = "update v_available_destinations ";
+										$sql .= "set destination_used = 'not use', domain_uuid = null ";
+										$sql .= "where destination_number = :destination_number ";
+										$parameters['destination_number'] = $_SESSION['old_destination'];
+										$database->execute($sql, $parameters);
+										unset($sql, $parameters);
+									}
+									
+									$new_destination = $destination_number;
+									
+									//update the previous details
+									if ($action == "update"){
+										$sql = "update v_available_destinations ";
+										$sql .= "set destination_used = 'used', domain_uuid = :domain_uuid ";
+										$sql .= "where destination_number = :destination_number ";
+										$parameters['domain_uuid'] = $domain_uuid;
+										$parameters['destination_number'] = $new_destination;
+										$database->execute($sql, $parameters);
+										unset($sql, $parameters);
+									}
+									
+									//update the previous details
+									if ($action == "add") {
+										$sql = "update v_available_destinations ";
+										$sql .= "set destination_used = 'used', domain_uuid = :domain_uuid ";
+										$sql .= "where destination_number = :destination_number ";
+										$parameters['domain_uuid'] = $domain_uuid;
+										$parameters['destination_number'] = $destination_number;
+										$database->execute($sql, $parameters);
+										unset($sql, $parameters);
+									}
 								}
 
 							//build the destination array
@@ -1346,6 +1394,9 @@
 		$destination_conditions[0]['condition_app'] = '';
 		$destination_conditions[0]['condition_data'] = '';
 	}
+	
+//save the old destination
+	$_SESSION['old_destination'] = $destination_number;
 
 //get the dialplan details in an array
 	$sql = "select * from v_dialplan_details ";
@@ -1450,6 +1501,16 @@
 		$sql .= "order by group_name asc ";
 		$parameters['domain_uuid'] = $domain_uuid;
 		$groups = $database->select($sql, $parameters, 'all');
+		unset($sql, $parameters);
+	}
+	
+//get the destination list
+	if (permission_exists('destination_number')) {
+		$sql = "select destination_number, destination_description, domain_uuid, destination_trunk_id, destination_used from v_available_destinations ";
+		$sql .= "where (destination_enabled = :destination_enabled) ";
+		$sql .= "order by destination_trunk_id,destination_number asc ";
+		$parameters['destination_enabled'] = 'true';
+		$destinations = $database->select($sql, $parameters, 'all');
 		unset($sql, $parameters);
 	}
 
@@ -1630,22 +1691,86 @@
 		echo "</tr>\n";
 	}
 
-	//destination number
-	echo "<tr>\n";
-	echo "<td class='vncellreq' valign='top' align='left' nowrap='nowrap'>\n";
-	echo "	".$text['label-destination_number']."\n";
-	echo "</td>\n";
-	echo "<td class='vtable' align='left'>\n";
+	/*--------------------------------------------------------------------------------*/
+	?>
+	<script>
+	var Objs;
+	function changeToInput_destination_number(obj){
+		tb=document.createElement('INPUT');
+		tb.type='text';
+		tb.name=obj.name;
+		tb.className='formfld';
+		tb.setAttribute('id', 'destination_number');
+		tb.setAttribute('style', 'width: 100px;');
+		tb.value=obj.options[obj.selectedIndex].value;
+		document.getElementById('btn_select_to_input_destination_number').style.visibility = 'hidden';
+		tbb=document.createElement('INPUT');
+		tbb.setAttribute('class', 'btn');
+		tbb.setAttribute('style', 'margin-left: 4px;');
+		tbb.type='button';
+		tbb.value=$("<div />").html('&#9665;').text();
+		tbb.objs=[obj,tb,tbb];
+		tbb.onclick=function(){ Replace_destination_number(this.objs); }
+		obj.parentNode.insertBefore(tb,obj);
+		obj.parentNode.insertBefore(tbb,obj);
+		obj.parentNode.removeChild(obj);
+		Replace_destination_number(this.objs);
+	}
+	
+	function Replace_destination_number(obj){
+		obj[2].parentNode.insertBefore(obj[0],obj[2]);
+		obj[0].parentNode.removeChild(obj[1]);
+		obj[0].parentNode.removeChild(obj[2]);
+		document.getElementById('btn_select_to_input_destination_number').style.visibility = 'visible';
+	}
+	</script>
+	<?php
+	
 	if (permission_exists('destination_number')) {
-		echo "	<input class='formfld' type='text' name='destination_number' maxlength='255' value=\"".escape($destination_number)."\" required='required'>\n";
-		echo "<br />\n";
-		echo $text['description-destination_number']."\n";
+		echo "<tr>\n";
+		echo "<td class='vncellreq' valign='top' align='left' nowrap='nowrap'>\n";
+		echo "	".$text['label-destination_number']."\n";
+		echo "</td>\n";
+		echo "<td class='vtable' align='left'>\n";
+		if (permission_exists('destination_number')) {
+			echo "	<select name='destination_number' id='destination_number' class='formfld' style='width: auto;'>\n";
+			echo "		<option value=".$destination_number.">".$destination_number."</option>\n";
+			$type = null;
+			
+			foreach($destinations as $field) {
+				echo "<pre>";
+				print_r($field);
+				echo "</pre>";
+
+				if ($field['destination_number'] == $destination_number) { $selected = "selected='selected'"; } else { $selected = ''; }
+				if ($field['destination_used'] == 'not use') {
+					if ($field['destination_trunk_id'] != $type) {
+						if ($type !== null) {
+							echo "</optgroup>";  // close previous optgroup
+						}
+						$type = $field['destination_trunk_id'];
+						echo '<optgroup label="'.ucfirst($field['destination_trunk_id']).' Trunk">';  // start optgroup
+					}
+					echo "		<option value='".escape($field['destination_number'])."' $selected>".escape($field['destination_number'])."</option>\n";
+				}
+			}
+			echo "</optgroup>";
+			echo "		</select>";
+			
+			echo "	<input type='button' id='btn_select_to_input_destination_number' class='btn' name='' alt='".$text['button-back']."' onclick='changeToInput_destination_number(document.getElementById(\"destination_number\"));this.style.visibility = \"hidden\";' value='&#9665;'>\n";
+			
+			unset($destinations);
+			echo "<br />\n";
+			echo $text['description-destination_number']."\n";
+		}
+		else {
+			echo escape($destination_number)."\n";
+		}
+		echo "</td>\n";
+		echo "</tr>\n";
 	}
-	else {
-		echo escape($destination_number)."\n";
-	}
-	echo "</td>\n";
-	echo "</tr>\n";
+	
+	/*--------------------------------------------------------------------------------*/
 
 	//condition field
 	if (permission_exists('destination_condition_field')) {
