@@ -21,12 +21,8 @@
 	the Initial Developer. All Rights Reserved.
 */
 
-//set the include path
-	$conf = glob("{/usr/local/etc,/etc}/fusionpbx/config.conf", GLOB_BRACE);
-	set_include_path(parse_ini_file($conf[0])['document.root']);
-
 //includes files
-	require_once "resources/require.php";
+	require_once dirname(__DIR__, 2) . "/resources/require.php";
 	require_once "resources/check_auth.php";
 
 //check permissions
@@ -40,7 +36,7 @@
 	$text = $language->get();
 
 //action add or update
-	if (is_uuid($_REQUEST["id"])) {
+	if (!empty($_REQUEST["id"]) && is_uuid($_REQUEST["id"])) {
 		$action = "update";
 		$available_destination_uuid = $_REQUEST["id"];
 		$id = $_REQUEST["id"];
@@ -54,7 +50,7 @@
 		if ($action == "update" && is_uuid($_POST["available_destination_uuid"])) {
 				$available_destination_uuid = $_POST["available_destination_uuid"];
 		}
-		$destination_trunk_name = $_POST["destination_trunk_name"];
+		$destination_trunk_id = $_POST["destination_trunk_id"];
 		$destination_number = $_POST["destination_number"];
 		$destination_enabled = $_POST["destination_enabled"];
 		$destination_description = $_POST["destination_description"];
@@ -105,10 +101,10 @@
 
 		//check for all required data
 			$msg = '';
-			if (strlen($destination_trunk_name) == 0) { $msg .= $text['message-required']." ".$text['label-destination_trunk_name']."<br>\n"; }
-			if (strlen($destination_number) == 0) { $msg .= $text['message-required']." ".$text['label-destination_number']."<br>\n"; }
-			if (strlen($destination_enabled) == 0) { $msg .= $text['message-required']." ".$text['label-available_destinations_enabled']."<br>\n"; }
-		//check for duplicates
+			if (empty($destination_trunk_id)) { $msg .= $text['message-required']." ".$text['label-destination_trunk_id']."<br>\n"; }
+			if (empty($destination_number)) { $msg .= $text['message-required']." ".$text['label-destination_number']."<br>\n"; }
+			if (empty($destination_enabled)) { $msg .= $text['message-required']." ".$text['label-available_destinations_enabled']."<br>\n"; }
+		//check for transfareds
 			if ($destination_number != $db_destination_number && $_SESSION['destinations']['unique']['boolean'] == 'true') {
 				$sql = "select count(*) from v_available_destinations ";
 				$sql .= "where (destination_number = :destination_number)";
@@ -116,11 +112,11 @@
 				$database = new database;
 				$num_rows = $database->select($sql, $parameters, 'column');
 				if ($num_rows > 0) {
-					$msg .= $text['message-duplicate']."<br>\n";
+					$msg .= $text['message-transfared']."<br>\n";
 				}
 				unset($sql, $parameters, $num_rows);
 			}
-			if (strlen($msg) > 0 && strlen($_POST["persistformvar"]) == 0) {
+			if (!empty($msg) && empty($_POST["persistformvar"])) {
 				require_once "resources/header.php";
 				require_once "resources/persist_form_var.php";
 				echo "<div align='center'>\n";
@@ -136,14 +132,14 @@
 		
 
 		//add the available_destination_uuid
-			if (strlen($available_destination_uuid) == 0) {
+			if (empty($available_destination_uuid)) {
 				$available_destination_uuid = uuid();
 			}
 
 		//prepare the array
 			$array['available_destinations'][0]['available_destination_uuid'] = $available_destination_uuid;
 			//$array['available_destinations'][0]['domain_uuid'] = null;
-			$array['available_destinations'][0]['destination_trunk_name'] = $destination_trunk_name;
+			$array['available_destinations'][0]['destination_trunk_id'] = $destination_trunk_id;
 			$array['available_destinations'][0]['destination_number'] = $destination_number;
 			$array['available_destinations'][0]['destination_used'] = $destination_used;
 			$array['available_destinations'][0]['destination_enabled'] = $destination_enabled;
@@ -176,15 +172,15 @@
 	}
 
 //pre-populate the form
-	if (is_array($_GET) && $_POST["persistformvar"] != "true") {
+	if (!empty($_GET) && is_array($_GET) && (empty($_POST["persistformvar"]) || $_POST["persistformvar"] != "true")) {
 		$available_destination_uuid = $_GET["id"];
 		$sql = "select * from v_available_destinations ";
 		$sql .= "where available_destination_uuid = :available_destination_uuid ";
 		$parameters['available_destination_uuid'] = $available_destination_uuid;
 		$database = new database;
-		$row = $database->select($sql, $parameters, 'row');
-		if (is_array($row) && sizeof($row) != 0) {
-			$destination_trunk_name = $row["destination_trunk_name"];
+		$row = $database->select($sql, $parameters ?? null, 'row');
+		if (!empty($row)) {
+			$destination_trunk_id = $row["destination_trunk_id"];
 			$destination_number = $row["destination_number"];
 			$destination_enabled = $row["destination_enabled"];
 			$destination_description = $row["destination_description"];
@@ -220,16 +216,17 @@
 		echo modal::create(['id'=>'modal-delete','type'=>'delete','actions'=>button::create(['type'=>'submit','label'=>$text['button-continue'],'icon'=>'check','id'=>'btn_delete','style'=>'float: right; margin-left: 15px;','collapse'=>'never','name'=>'action','value'=>'delete','onclick'=>"modal_close();"])]);
 	}
 
+	echo "<div class='card'>\n";
 	echo "<table width='100%' border='0' cellpadding='0' cellspacing='0'>\n";
 
 	echo "<tr>\n";
 	echo "<td width='30%' class='vncellreq' valign='top' align='left' nowrap='nowrap'>\n";
-	echo "	".$text['label-destination_trunk_name']."\n";
+	echo "	".$text['label-destination_trunk_id']."\n";
 	echo "</td>\n";
 	echo "<td width='70%' class='vtable' style='position: relative;' align='left'>\n";
-	echo "	<input class='formfld' type='text' name='destination_trunk_name' maxlength='255' value='".escape($destination_trunk_name)."'>\n";
+	echo "	<input class='formfld' type='text' name='destination_trunk_id' maxlength='255' value='".escape($destination_trunk_id)."'>\n";
 	echo "<br />\n";
-	echo $text['description-destination_trunk_name']."\n";
+	echo $text['description-destination_trunk_id']."\n";
 	echo "</td>\n";
 	echo "</tr>\n";
 
@@ -283,20 +280,18 @@
 	echo "	".$text['label-available_destinations_enabled']."\n";
 	echo "</td>\n";
 	echo "<td class='vtable' style='position: relative;' align='left'>\n";
-	echo "	<select class='formfld' name='destination_enabled'>\n";
-	if ($destination_enabled == "true") {
-		echo "		<option value='true' selected='selected'>".$text['label-true']."</option>\n";
+	if (substr($_SESSION['theme']['input_toggle_style']['text'], 0, 6) == 'switch') {
+		echo "	<label class='switch'>\n";
+		echo "		<input type='checkbox' id='destination_enabled' name='destination_enabled' value='true' ".(!empty($destination_enabled) && $destination_enabled == 'true' ? "checked='checked'" : null).">\n";
+		echo "		<span class='slider'></span>\n";
+		echo "	</label>\n";
 	}
 	else {
-		echo "		<option value='true'>".$text['label-true']."</option>\n";
+		echo "	<select class='formfld' id='destination_enabled' name='destination_enabled'>\n";
+		echo "		<option value='true' ".($destination_enabled == 'true' ? "selected='selected'" : null).">".$text['option-true']."</option>\n";
+		echo "		<option value='false' ".($destination_enabled == 'false' ? "selected='selected'" : null).">".$text['option-false']."</option>\n";
+		echo "	</select>\n";
 	}
-	if ($destination_enabled == "false") {
-		echo "		<option value='false' selected='selected'>".$text['label-false']."</option>\n";
-	}
-	else {
-		echo "		<option value='false'>".$text['label-false']."</option>\n";
-	}
-	echo "	</select>\n";
 	echo "<br />\n";
 	echo $text['description-available_destinations_enabled']."\n";
 	echo "</td>\n";
@@ -307,15 +302,15 @@
 	echo "	".$text['label-destination_description']."\n";
 	echo "</td>\n";
 	echo "<td class='vtable' align='left'>\n";
-	//echo "	<input class='formfld' type='text' name='destination_description' maxlength='255' value=\"".escape($destination_description)."\">\n";
-	echo "<textarea style='height: 200px;' class='formfld' name='destination_description' height='150px' rows='10' cols='100' >$destination_description</textarea>\n";
+	echo "	<textarea style='height: 200px;' class='formfld' name='destination_description' height='150px' rows='10' cols='100' >".escape($destination_description ?? '')."</textarea>\n";
 	echo "<br />\n";
 	echo $text['description-destination_description']."\n";
 	echo "</td>\n";
 	echo "</tr>\n";
 
-	echo "</table>";
-	echo "<br /><br />";
+	echo "</table>\n";
+	echo "</div>\n";
+	echo "<br /><br />\n";
 
 	if ($action == "update") {
 		echo "<input type='hidden' name='db_destination_number' value='".escape($destination_number)."'>\n";
