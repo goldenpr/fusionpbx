@@ -48,17 +48,17 @@
 		$apps[$x]['destinations'][$y]['type'] = "sql";
 		$apps[$x]['destinations'][$y]['label'] = "available_destinations";
 		$apps[$x]['destinations'][$y]['name'] = "available_destinations";
-		$apps[$x]['destinations'][$y]['sql'] = "select destination_trunk_name, destination_number, destination_description from v_available_destinations ";
+		$apps[$x]['destinations'][$y]['sql'] = "select destination_trunk_id, destination_number, destination_description from v_available_destinations ";
 		$apps[$x]['destinations'][$y]['where'] = "where domain_uuid = '\${domain_uuid}' and destination_enabled = 'true'";
 		$apps[$x]['destinations'][$y]['order_by'] = "destination_number asc";
 		$apps[$x]['destinations'][$y]['field']['available_destination_uuid'] = "available_destination_uuid";
-		$apps[$x]['destinations'][$y]['field']['destination_trunk_name'] = "destination_trunk_name";
+		$apps[$x]['destinations'][$y]['field']['destination_trunk_id'] = "destination_trunk_id";
 		$apps[$x]['destinations'][$y]['field']['destination_description'] = "destination_description";
 		$apps[$x]['destinations'][$y]['field']['destination_number'] = "destination_number";
 		$apps[$x]['destinations'][$y]['select_value']['user_contact'] = "\${destination}";
 		$apps[$x]['destinations'][$y]['select_value']['dialplan'] = "available_destinations:\${destination}";
 		$apps[$x]['destinations'][$y]['select_value']['ivr'] = "menu-exec-app:available_destinations \${destination}";
-		$apps[$x]['destinations'][$y]['select_label'] = "\${destination_trunk_name} \${destination_number} \${destination_description}";
+		$apps[$x]['destinations'][$y]['select_label'] = "\${destination_trunk_id} \${destination_number} \${destination_description}";
 		$y++;*/
 
 	//Available Destinations
@@ -80,10 +80,10 @@
 		$apps[$x]['db'][$y]['fields'][$z]['key']['reference']['table'] = 'v_domains';
 		$apps[$x]['db'][$y]['fields'][$z]['key']['reference']['field'] = 'domain_uuid';
 		$z++;
-		$apps[$x]['db'][$y]['fields'][$z]['name'] = 'destination_trunk_name';
+		$apps[$x]['db'][$y]['fields'][$z]['name'] = 'destination_trunk_id';
 		$apps[$x]['db'][$y]['fields'][$z]['type'] = 'text';
 		$apps[$x]['db'][$y]['fields'][$z]['search'] = 'true';
-		$apps[$x]['db'][$y]['fields'][$z]['description']['en-us'] = 'Enter the name.';
+		$apps[$x]['db'][$y]['fields'][$z]['description']['en-us'] = 'Enter the id.';
 		$z++;
 		$apps[$x]['db'][$y]['fields'][$z]['name'] = 'destination_number';
 		$apps[$x]['db'][$y]['fields'][$z]['type'] = 'text';
