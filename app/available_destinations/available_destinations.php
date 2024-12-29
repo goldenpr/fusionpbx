@@ -17,19 +17,15 @@
 
 	The Initial Developer of the Original Code is
 	Mark J Crane <markjcrane@fusionpbx.com>
-	Portions created by the Initial Developer are Copyright (C) 2018 - 2023
+	Portions created by the Initial Developer are Copyright (C) 2018-2024
 	the Initial Developer. All Rights Reserved.
 
 	Contributor(s):
 	Mark J Crane <markjcrane@fusionpbx.com>
 */
 
-//set the include path
-	$conf = glob("{/usr/local/etc,/etc}/fusionpbx/config.conf", GLOB_BRACE);
-	set_include_path(parse_ini_file($conf[0])['document.root']);
-
 //includes files
-	require_once "resources/require.php";
+	require_once dirname(__DIR__, 2) . "/resources/require.php";
 	require_once "resources/check_auth.php";
 	require_once "resources/paging.php";
 
@@ -46,15 +42,22 @@
 	$language = new text;
 	$text = $language->get();
 
+//set additional variables
+	$search = $_GET["search"] ?? '';
+	$show = $_GET["show"] ?? '';
+
+//set from session variables
+	$list_row_edit_button = !empty($_SESSION['theme']['list_row_edit_button']['boolean']) ? $_SESSION['theme']['list_row_edit_button']['boolean'] : 'false';
+
 //get the http post data
-	if (is_array($_POST['available_destinations'])) {
+	if (!empty($_POST['available_destinations'])) {
 		$action = $_POST['action'];
 		$search = $_POST['search'];
 		$available_destinations = $_POST['available_destinations'];
 	}
 
 //process the http post data by action
-	if ($action != '' && is_array($available_destinations) && @sizeof($available_destinations) != 0) {
+	if (!empty($action) && !empty($available_destinations)) {
 		switch ($action) {
 			case 'toggle':
 				if (permission_exists('available_destination_edit')) {
@@ -70,19 +73,19 @@
 				break;
 		}
 
-		header('Location: available_destinations.php'.($search != '' ? '?search='.urlencode($search) : null));
+		header('Location: available_destinations.php'.(!empty($search) ? '?search='.urlencode($search) : null));
 		exit;
 	}
 
 //get order and order by
-	$order_by = $_GET["order_by"];
-	$order = $_GET["order"];
+	$order_by = $_GET["order_by"] ?? '';
+	$order = $_GET["order"] ?? '';
 
 //add the search string
-	if (isset($_GET["search"])) {
+	if (!empty($search)) {
 		$search =  strtolower($_GET["search"]);
 		$sql_search = " (";
-		$sql_search .= "	lower(destination_trunk_name) like :search ";
+		$sql_search .= "	lower(destination_trunk_id) like :search ";
 		$sql_search .= "	or lower(destination_number) like :search ";
 		$sql_search .= "	or lower(destination_enabled) like :search ";
 		$sql_search .= "	or lower(destination_used) like :search ";
@@ -93,7 +96,7 @@
 
 //get the count
 	$sql = "select count(available_destination_uuid) from v_available_destinations ";
-	if ($_GET['show'] == "all" && permission_exists('available_destination_all')) {
+	if (!empty($show) && $show == "all" && permission_exists('available_destination_all')) {
 		if (isset($sql_search)) {
 			$sql .= "where ".$sql_search;
 		}
@@ -106,23 +109,35 @@
 		$parameters['domain_uuid'] = $domain_uuid;
 	}
 	$database = new database;
-	$num_rows = $database->select($sql, $parameters, 'column');
+	$num_rows = $database->select($sql, $parameters ?? null, 'column');
 
 //prepare to page the results
 	$rows_per_page = ($_SESSION['domain']['paging']['numeric'] != '') ? $_SESSION['domain']['paging']['numeric'] : 50;
-	$param = $search ? "&search=".$search : null;
-	$param = ($_GET['show'] == 'all' && permission_exists('available_destination_all')) ? "&show=all" : null;
-	$page = is_numeric($_GET['page']) ? $_GET['page'] : 0;
+	$param = !empty($search) ? "&search=".$search : null;
+	$param = (isset($_GET['show']) && $_GET['show'] == 'all' && permission_exists('available_destination_all')) ? "&show=all" : null;
+	$page = isset($_GET['page']) && is_numeric($_GET['page']) ? $_GET['page'] : 0;
 	list($paging_controls, $rows_per_page) = paging($num_rows, $param, $rows_per_page);
 	list($paging_controls_mini, $rows_per_page) = paging($num_rows, $param, $rows_per_page, true);
 	$offset = $rows_per_page * $page;
 
 //get the list
 	$sql = str_replace('count(available_destination_uuid)', '*', $sql);
-	$sql .= order_by($order_by, $order, 'destination_trunk_name', 'asc');
+	if (!empty($show) && $show == "all" && permission_exists('available_destination_all')) {
+		if (isset($sql_search)) {
+			$sql .= "and ".$sql_search;
+		}
+	}
+	else {
+		$sql .= "and (domain_uuid = :domain_uuid or domain_uuid is null) ";
+		if (isset($sql_search)) {
+			$sql .= "and ".$sql_search;
+		}
+		$parameters['domain_uuid'] = $domain_uuid;
+	}
+	$sql .= order_by($order_by, $order, 'destination_trunk_id', 'asc');
 	$sql .= limit_offset($rows_per_page, $offset);
 	$database = new database;
-	$available_destinations = $database->select($sql, $parameters, 'all');
+	$available_destinations = $database->select($sql, $parameters ?? null, 'all');
 	unset($sql, $parameters);
 
 //create token
@@ -135,8 +150,11 @@
 
 //show the content
 	echo "<div class='action_bar' id='action_bar'>\n";
-	echo "	<div class='heading'><b>".$text['title-available_destinations']." (".$num_rows.")</b></div>\n";
+	echo "	<div class='heading'><b>".$text['title-available_destinations']."</b><div class='count'>".number_format($num_rows)."</div></div>\n";
 	echo "	<div class='actions'>\n";
+	/*if (permission_exists('available_destination_import')) {
+		echo button::create(['type'=>'button','label'=>$text['button-import'],'icon'=>$_SESSION['theme']['button_icon_import'],'style'=>'margin-right: 15px;','link'=>'available_destination_imports.php']);
+	}*/
 	if (permission_exists('available_destination_add')) {
 		echo button::create(['type'=>'button','label'=>$text['button-add'],'icon'=>$_SESSION['theme']['button_icon_add'],'id'=>'btn_add','link'=>'available_destination_edit.php']);
 	}
@@ -148,7 +166,7 @@
 	}
 	echo 		"<form id='form_search' class='inline' method='get'>\n";
 	if (permission_exists('available_destination_all')) {
-		if ($_GET['show'] == 'all') {
+		if (isset($show) && $show == 'all') {
 			echo "		<input type='hidden' name='show' value='all'>\n";
 		}
 		else {
@@ -157,7 +175,7 @@
 	}
 	echo 		"<input type='text' class='txt list-search' name='search' id='search' value=\"".escape($search)."\" placeholder=\"".$text['label-search']."\" onkeydown=''>";
 	echo button::create(['label'=>$text['button-search'],'icon'=>$_SESSION['theme']['button_icon_search'],'type'=>'submit','id'=>'btn_search']);
-	//echo button::create(['label'=>$text['button-reset'],'icon'=>$_SESSION['theme']['button_icon_reset'],'type'=>'button','id'=>'btn_reset','link'=>'available_destinations.php','style'=>($search == '' ? 'display: none;' : null)]);
+	//echo button::create(['label'=>$text['button-reset'],'icon'=>$_SESSION['theme']['button_icon_reset'],'type'=>'button','id'=>'btn_reset','link'=>'bridges.php','style'=>($search == '' ? 'display: none;' : null)]);
 	if ($paging_controls_mini != '') {
 		echo 	"<span style='margin-left: 15px;'>".$paging_controls_mini."</span>\n";
 	}
@@ -165,6 +183,7 @@
 	echo "	</div>\n";
 	echo "	<div style='clear: both;'></div>\n";
 	echo "</div>\n";
+
 	if (permission_exists('available_destination_edit') && $available_destinations) {
 		echo modal::create(['id'=>'modal-toggle','type'=>'toggle','actions'=>button::create(['type'=>'button','label'=>$text['button-continue'],'icon'=>'check','id'=>'btn_toggle','style'=>'float: right; margin-left: 15px;','collapse'=>'never','onclick'=>"modal_close(); list_action_set('toggle'); list_form_submit('form_list');"])]);
 	}
@@ -175,20 +194,22 @@
 	echo $text['title_description-available_destinations']."\n";
 	echo "<br /><br />\n";
 
+	echo "<div class='card'>\n";
 	echo "<form id='form_list' method='post'>\n";
 	echo "<input type='hidden' id='action' name='action' value=''>\n";
 	echo "<input type='hidden' name='search' value=\"".escape($search)."\">\n";
+
 	echo "<table class='list'>\n";
 	echo "<tr class='list-header'>\n";
 	if (permission_exists('available_destination_add') || permission_exists('available_destination_edit') || permission_exists('available_destination_delete')) {
 		echo "	<th class='checkbox'>\n";
-		echo "		<input type='checkbox' id='checkbox_all' name='checkbox_all' onclick='list_all_toggle(); checkbox_on_change(this);' ".($available_destinations ?: "style='visibility: hidden;'").">\n";
+		echo "		<input type='checkbox' id='checkbox_all' name='checkbox_all' onclick='list_all_toggle(); checkbox_on_change(this);' ".(empty($available_destinations) ? "style='visibility: hidden;'" : null).">\n";
 		echo "	</th>\n";
 	}
-	if ($_GET['show'] == 'all' && permission_exists('available_destination_all')) {
+	if (!empty($show) && $show == 'all' && permission_exists('available_destination_all')) {
 		echo th_order_by('domain_name', $text['label-domain'], $order_by, $order, $param);
 	}
-	echo th_order_by('destination_trunk_name', $text['label-destination_trunk_name'], $order_by, $order, $param);
+	echo th_order_by('destination_trunk_id', $text['label-destination_trunk_id'], $order_by, $order, $param);
 	echo th_order_by('destination_number', $text['label-destination_number'], $order_by, $order, $param);
 	echo th_order_by('destination_used', $text['label-destinations_used'], $order_by, $order, null, "class='center'", $param);
 	echo th_order_by('destination_enabled', $text['label-available_destinations_enabled'], $order_by, $order, null, "class='center'");
@@ -198,7 +219,7 @@
 	}
 	echo "</tr>\n";
 
-	if (is_array($available_destinations) && @sizeof($available_destinations) != 0) {
+	if (!empty($available_destinations)) {
 		$x = 0;
 		foreach ($available_destinations as $row) {
 			if (permission_exists('available_destination_edit')) {
@@ -211,19 +232,19 @@
 				echo "		<input type='hidden' name='available_destinations[$x][uuid]' value='".escape($row['available_destination_uuid'])."' />\n";
 				echo "	</td>\n";
 			}
-			if ($_GET['show'] == 'all' && permission_exists('available_destination_all')) {
-				echo "	<td>".escape($_SESSION['domains'][$row['domain_uuid']]['domain_name'])."</td>\n";
+			if (!empty($_GET['show']) && $_GET['show'] == 'all' && permission_exists('available_destination_all')) {
+				echo "	<td>".escape($row['domain_name'])."</td>\n";
 			}
 			echo "	<td>\n";
 			if (permission_exists('available_destination_edit')) {
-				echo "	<a href='".$list_row_url."' title=\"".$text['button-edit']."\">".escape($row['destination_trunk_name'])."</a>\n";
+				echo "	<a href='".$list_row_url."' title=\"".$text['button-edit']."\">".escape($row['destination_trunk_id'])."</a>\n";
 			}
 			else {
-				echo "	".escape($row['destination_trunk_name']);
+				echo "	".escape($row['destination_trunk_id']);
 			}
 			echo "	</td>\n";
 			echo "	<td>\n";
-			if (permission_exists('available_destinations_edit')) {
+			if (permission_exists('available_destination_edit')) {
 				echo "	<a href='".$list_row_url."' title=\"".$text['button-edit']."\">".escape($row['destination_number'])."</a>\n";
 			}
 			else {
@@ -231,14 +252,14 @@
 			}
 			echo "	</td>\n";
 			echo "	<td class='no-link center'>\n";
-			if (permission_exists('available_destinations_edit')) {
+			if (permission_exists('available_destination_edit')) {
 				echo "	<a href='".$list_row_url."' title=\"".$text['button-edit']."\">".ucfirst(strtolower(escape($row['destination_used'])))."</a>\n";
 			}
 			else {
 				echo "	".escape($row['destination_used']);
 			}
 			echo "	</td>\n";
-			if (permission_exists('available_destinations_edit')) {
+			if (permission_exists('available_destination_edit')) {
 				echo "	<td class='no-link center'>\n";
 				echo button::create(['type'=>'submit','class'=>'link','label'=>$text['label-'.$row['destination_enabled']],'title'=>$text['button-toggle'],'onclick'=>"list_self_check('checkbox_".$x."'); list_action_set('toggle'); list_form_submit('form_list')"]);
 			}
@@ -248,7 +269,7 @@
 			}
 			echo "	</td>\n";
 			echo "	<td class='description overflow hide-sm-dn'>".escape($row['destination_description'])."</td>\n";
-			if (permission_exists('available_destination_edit') && $_SESSION['theme']['list_row_edit_button']['boolean'] == 'true') {
+			if (permission_exists('available_destination_edit') && !empty($list_row_edit_button) && $list_row_edit_button == 'true') {
 				echo "	<td class='action-button'>\n";
 				echo button::create(['type'=>'button','title'=>$text['button-edit'],'icon'=>$_SESSION['theme']['button_icon_edit'],'link'=>$list_row_url]);
 				echo "	</td>\n";
@@ -264,6 +285,7 @@
 	echo "<div align='center'>".$paging_controls."</div>\n";
 	echo "<input type='hidden' name='".$token['name']."' value='".$token['hash']."'>\n";
 	echo "</form>\n";
+	echo "</div>\n";
 
 //include the footer
 	require_once "resources/footer.php";
